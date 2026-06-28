@@ -133,10 +133,11 @@ const GameCore = (() => {
     Coins.update(speed, fm);
     PowerUps.update(speed, fm);
     Thief.update(speed, worldOffset, score, fm, speedUpBuffer > 0);
-    if (speedUpWarning === 0 && speedUpBuffer === 0) {
-      Obstacles.update(speed, fm, score);
-    } else {
+    // Warning: normal spawning. Buffer: only move existing (no new spawns)
+    if (speedUpBuffer > 0) {
       Obstacles.updateMoveOnly(speed, fm);
+    } else {
+      Obstacles.update(speed, fm, score);
     }
 
     // Collisions
