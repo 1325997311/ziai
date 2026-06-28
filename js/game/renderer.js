@@ -85,65 +85,115 @@ const Renderer = (() => {
   }
 
   function drawRabbit(ctx, ox, oy, state, frame, bob) {
-    const earWiggle = state === 'running' ? Math.sin(frame * 1.2) * 2 : 0;
+    const b = '#000', w = '#fff', pink = '#ffb6c1', gray = '#808080';
+    ctx.lineWidth = 1.5;
 
     if (state === 'sliding') {
-      // Flat rabbit
-      ctx.fillStyle = C.white; ctx.strokeStyle = C.black; ctx.lineWidth = 1.5;
-      ctx.fillRect(ox + 2, oy + 12, 22, 10); ctx.strokeRect(ox + 2, oy + 12, 22, 10);
-      ctx.fillStyle = C.black;
-      ctx.fillRect(ox + 4, oy + 14, 2, 2);
-      // Flat ears
-      ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
-      ctx.fillRect(ox + 4, oy + 8, 14, 3); ctx.strokeRect(ox + 4, oy + 8, 14, 3);
-    } else {
-      // Ears
-      ctx.fillStyle = C.white; ctx.strokeStyle = C.black; ctx.lineWidth = 1.5;
-      ctx.fillRect(ox + 6, oy + bob - 14 + earWiggle, 5, 16);
-      ctx.strokeRect(ox + 6, oy + bob - 14 + earWiggle, 5, 16);
-      ctx.fillRect(ox + 15, oy + bob - 14 - earWiggle, 5, 16);
-      ctx.strokeRect(ox + 15, oy + bob - 14 - earWiggle, 5, 16);
-      // Inner ears
-      ctx.fillStyle = C.navy;
-      ctx.fillRect(ox + 7, oy + bob - 10 + earWiggle, 3, 8);
-      ctx.fillRect(ox + 16, oy + bob - 10 - earWiggle, 3, 8);
+      // ---- SLIDING RABBIT ----
+      // Ears flat back
+      ctx.fillStyle = w; ctx.strokeStyle = b;
+      ctx.fillRect(ox + 2, oy + 6, 16, 4); ctx.strokeRect(ox + 2, oy + 6, 16, 4);
+      ctx.fillStyle = pink;
+      ctx.fillRect(ox + 4, oy + 7, 5, 2);
 
-      // Head
-      ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
-      ctx.fillRect(ox + 5, oy + bob + 1, 18, 13);
-      ctx.strokeRect(ox + 5, oy + bob + 1, 18, 13);
-      // Eye (red Win98 style)
-      ctx.fillStyle = C.red;
-      ctx.fillRect(ox + 8, oy + bob + 4, 3, 3);
-      ctx.fillStyle = C.black;
-      ctx.fillRect(ox + 4, oy + bob + 7, 2, 1);
-
-      // Body
-      const lean = state === 'dashing' ? 2 : 0;
-      ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
-      ctx.fillRect(ox + 3 + lean, oy + bob + 14, 22, 14);
-      ctx.strokeRect(ox + 3 + lean, oy + bob + 14, 22, 14);
-
-      // Legs
-      const lp = Math.sin(frame * 0.8) * (state === 'running' ? 3 : 1);
-      ctx.fillStyle = C.white; ctx.strokeStyle = C.black; ctx.lineWidth = 1;
-      ctx.fillRect(ox + 5, oy + bob + 28 + lp, 8, 5);
-      ctx.strokeRect(ox + 5, oy + bob + 28 + lp, 8, 5);
-      ctx.fillRect(ox + 13, oy + bob + 28 - lp, 8, 5);
-      ctx.strokeRect(ox + 13, oy + bob + 28 - lp, 8, 5);
-
+      // Body stretched low
+      ctx.fillStyle = w; ctx.strokeStyle = b;
+      ctx.fillRect(ox + 2, oy + 10, 24, 12); ctx.strokeRect(ox + 2, oy + 10, 24, 12);
+      // Eye
+      ctx.fillStyle = b;
+      ctx.fillRect(ox + 6, oy + 13, 3, 3);
+      ctx.fillStyle = w;
+      ctx.fillRect(ox + 7, oy + 14, 1, 1);
       // Tail
-      ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
-      ctx.beginPath();
-      ctx.arc(ox + 27 + lean, oy + bob + 20, 5, 0, Math.PI * 2);
-      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = w; ctx.strokeStyle = b;
+      ctx.beginPath(); ctx.arc(ox + 26, oy + 15, 4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      return;
+    }
 
-      // Dash lines
-      if (state === 'dashing') {
-        ctx.fillStyle = C.black;
-        ctx.fillRect(ox - 6, oy + 18, 4, 6);
-        ctx.fillRect(ox - 10, oy + 20, 3, 4);
-      }
+    // ====== NORMAL / JUMPING / DASHING ======
+    const earWiggle = state === 'running' ? Math.sin(frame * 1.2) * 2.5 : 0;
+    const lean = state === 'dashing' ? 3 : 0;
+
+    // ---- EARS ----
+    // Left ear
+    ctx.fillStyle = w; ctx.strokeStyle = b;
+    ctx.fillRect(ox + 6, oy + bob - 15 + earWiggle, 6, 18);
+    ctx.strokeRect(ox + 6, oy + bob - 15 + earWiggle, 6, 18);
+    ctx.fillStyle = pink;
+    ctx.fillRect(ox + 8, oy + bob - 11 + earWiggle, 3, 10);
+
+    // Right ear
+    ctx.fillStyle = w; ctx.strokeStyle = b;
+    ctx.fillRect(ox + 16, oy + bob - 15 - earWiggle, 6, 18);
+    ctx.strokeRect(ox + 16, oy + bob - 15 - earWiggle, 6, 18);
+    ctx.fillStyle = pink;
+    ctx.fillRect(ox + 17, oy + bob - 11 - earWiggle, 3, 10);
+
+    // ---- HEAD ----
+    ctx.fillStyle = w; ctx.strokeStyle = b;
+    ctx.fillRect(ox + 4, oy + bob, 20, 15);
+    ctx.strokeRect(ox + 4, oy + bob, 20, 15);
+
+    // Eyes
+    ctx.fillStyle = b;
+    ctx.fillRect(ox + 8, oy + bob + 3, 4, 5);
+    ctx.fillRect(ox + 16, oy + bob + 3, 4, 5);
+    ctx.fillStyle = w;
+    ctx.fillRect(ox + 9, oy + bob + 4, 2, 2);
+    ctx.fillRect(ox + 17, oy + bob + 4, 2, 2);
+
+    // Nose
+    ctx.fillStyle = pink;
+    ctx.fillRect(ox + 5, oy + bob + 8, 3, 2);
+    // Whiskers
+    ctx.fillStyle = gray;
+    ctx.fillRect(ox + 1, oy + bob + 8, 3, 0.5);
+    ctx.fillRect(ox + 1, oy + bob + 10, 3, 0.5);
+
+    // ---- BODY ----
+    ctx.fillStyle = w; ctx.strokeStyle = b;
+    ctx.fillRect(ox + 2 + lean, oy + bob + 15, 24, 16);
+    ctx.strokeRect(ox + 2 + lean, oy + bob + 15, 24, 16);
+
+    // Belly patch
+    ctx.fillStyle = '#f8f8f8';
+    ctx.fillRect(ox + 8 + lean, oy + bob + 17, 12, 10);
+
+    // ---- LEGS ----
+    const lp = Math.sin(frame * 0.7) * (state === 'running' ? 4 : 1);
+    // Back leg
+    ctx.fillStyle = w; ctx.strokeStyle = b;
+    ctx.fillRect(ox + 3, oy + bob + 31 + lp, 10, 7);
+    ctx.strokeRect(ox + 3, oy + bob + 31 + lp, 10, 7);
+    // Foot
+    ctx.fillStyle = gray;
+    ctx.fillRect(ox + 3, oy + bob + 36 + lp, 10, 3);
+
+    // Front leg
+    ctx.fillStyle = w; ctx.strokeStyle = b;
+    ctx.fillRect(ox + 15, oy + bob + 31 - lp, 10, 7);
+    ctx.strokeRect(ox + 15, oy + bob + 31 - lp, 10, 7);
+    ctx.fillStyle = gray;
+    ctx.fillRect(ox + 15, oy + bob + 36 - lp, 10, 3);
+
+    // ---- TAIL ----
+    ctx.fillStyle = w; ctx.strokeStyle = b;
+    ctx.beginPath();
+    ctx.arc(ox + 28 + lean, oy + bob + 20, 6, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    // Tail fluff detail
+    ctx.fillStyle = pink;
+    ctx.beginPath();
+    ctx.arc(ox + 29 + lean, oy + bob + 19, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ---- DASH EFFECT ----
+    if (state === 'dashing') {
+      ctx.fillStyle = b;
+      ctx.fillRect(ox - 8, oy + bob + 18, 6, 8);
+      ctx.fillRect(ox - 14, oy + bob + 20, 5, 4);
+      ctx.fillStyle = gray;
+      ctx.fillRect(ox - 6, oy + bob + 19, 3, 2);
     }
   }
 
