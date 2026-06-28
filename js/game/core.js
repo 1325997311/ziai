@@ -15,7 +15,6 @@ const GameCore = (() => {
   let speed, score, lives;
   let animId, lastTime;
   let abilities, stolenNotes;
-  let onWin, onLose, onLifeLost;
   let flashAlpha = 0;
   let lastError = '';
   let worldOffset = 0;
@@ -34,9 +33,6 @@ const GameCore = (() => {
     abilities   = opts.abilities || ['jump'];
     stolenNotes = opts.stolenNotes || [{ title: '空白笔记' }];
     catchScore  = opts.catchScore || CONFIG.THIEF_CATCH_SCORES[1];
-    onWin       = opts.onWin;
-    onLose       = opts.onLose;
-    onLifeLost   = opts.onLifeLost;
 
     GameInput.attach();
     Obstacles.create();
@@ -151,10 +147,10 @@ const GameCore = (() => {
         lives--;
         if (lives <= 0) {
           state = 'lost';
-          if (onLose) onLose({ score, stolenNotes, reason: 'dead' });
+          EventBus.emit('game:lose', { score, stolenNotes, reason: 'dead' });
           return;
         } else {
-          if (onLifeLost) onLifeLost({ lives, score });
+          EventBus.emit('game:lifeLost', { lives, score });
           flashAlpha = 0.6;
           player.reset(abilities);
           player.invincible = true;
@@ -172,13 +168,13 @@ const GameCore = (() => {
       state = 'won';
       score += SCORE_WIN_BONUS;
       if (stolenNotes.length > 0) score += stolenNotes.reduce((s,n) => s + (n.content||'').length, 0);
-      if (onWin) onWin({ score, stolenNotes });
+      EventBus.emit('game:win', { score, stolenNotes });
       return;
     }
 
     if (dist > W * 3) {
       state = 'lost';
-      if (onLose) onLose({ score, stolenNotes, reason: 'escaped' });
+      EventBus.emit('game:lose', { score, stolenNotes, reason: 'escaped' });
       return;
     }
 

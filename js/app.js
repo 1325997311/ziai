@@ -302,39 +302,12 @@ const app = createApp({
         const catchTarget = catchScore || _lastGameCatch || 5000;
 
         try {
+        _gameNotes = notes;
         GameCore.init(canvas, {
           abilities: abilities.value,
           stolenNotes: notes,
           thiefLevel: level,
           catchScore: catchTarget,
-          onWin: (r) => {
-            gameRunning = false;
-            const sn = r.stolenNotes || notes;
-            saveScore(r.score, sn[0]);
-            const names = sn.map(n => '《' + (n.title || '笔记') + '》').join('、');
-            result.value = {
-              show: true, icon: '🎉', title: '夺回笔记！',
-              msg: `成功追回了 ${names}！`, score: r.score,
-            };
-          },
-          onLose: (r) => {
-            gameRunning = false;
-            const sn = r.stolenNotes || notes;
-            saveScore(r.score, sn[0]);
-            const names = sn.map(n => '《' + (n.title || '笔记') + '》').join('、');
-            result.value = {
-              show: true, icon: r.reason === 'dead' ? '💀' : '😢',
-              title: r.reason === 'dead' ? '你倒下了...' : '被逃走了...',
-              msg: r.reason === 'dead'
-                ? `小偷带着 ${names} 逃之夭夭...\n别担心，笔记还在你的收藏里！`
-                : `小偷带着 ${names} 消失了。别担心，笔记还在！`,
-              score: r.score,
-            };
-          },
-          onLifeLost: (r) => {
-            // Brief flash when losing a life but still alive
-            showToast('💔', `失去一条命！还剩 ${r.lives} 条`);
-          },
         });
 
         // Tap handler: start / resume
@@ -398,6 +371,37 @@ const app = createApp({
     // ---- Mount ----
     onMounted(() => {
       checkBackupReminder();
+
+      // EventBus: game events → Vue UI
+      EventBus.on('game:win', (r) => {
+        gameRunning = false;
+        const sn = r.stolenNotes || _gameNotes;
+        saveScore(r.score, sn[0]);
+        const names = sn.map(n => '《' + (n.title || '笔记') + '》').join('、');
+        result.value = {
+          show: true, icon: '🎉', title: '夺回笔记！',
+          msg: `成功追回了 ${names}！`, score: r.score,
+        };
+      });
+
+      EventBus.on('game:lose', (r) => {
+        gameRunning = false;
+        const sn = r.stolenNotes || _gameNotes;
+        saveScore(r.score, sn[0]);
+        const names = sn.map(n => '《' + (n.title || '笔记') + '》').join('、');
+        result.value = {
+          show: true, icon: r.reason === 'dead' ? '💀' : '😢',
+          title: r.reason === 'dead' ? '你倒下了...' : '被逃走了...',
+          msg: r.reason === 'dead'
+            ? `小偷带着 ${names} 逃之夭夭...\n别担心，笔记还在你的收藏里！`
+            : `小偷带着 ${names} 消失了。别担心，笔记还在！`,
+          score: r.score,
+        };
+      });
+
+      EventBus.on('game:lifeLost', (r) => {
+        showToast('💔', `失去一条命！还剩 ${r.lives} 条`);
+      });
 
       // Periodic quota check
       setInterval(() => {
