@@ -55,12 +55,26 @@ const GameCore = (() => {
     drawFrame(0);
   }
 
+  let countdown = 0; // 3→2→1→GO
+
   function start() {
     if (state === 'playing') return;
-    state = 'playing';
+    countdown = 3;
+    state = 'countdown';
     lastTime = performance.now();
     lastError = '';
-    loop(lastTime);
+    // Show countdown then start
+    const tick = () => {
+      if (countdown > 0) {
+        drawFrame(lastTime);
+        countdown--;
+        setTimeout(tick, 500);
+      } else {
+        state = 'playing';
+        loop(performance.now());
+      }
+    };
+    tick();
   }
 
   function loop(ts) {
@@ -207,7 +221,7 @@ const GameCore = (() => {
     // HUD
     try {
       GameUI.draw(ctx, {
-        state, score, lives,
+        state, score, lives, countdown,
         player: { x: worldOffset + PLAYER_X, y: player?.y || 0 },
         thief: Thief.get() || {},
         speed, abilities: abilities || [],

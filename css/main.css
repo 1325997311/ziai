@@ -442,10 +442,90 @@ input, textarea, select {
   font-family: 'Press Start 2P', monospace;
 }
 
-/* Transitions */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.15s; }
+/* ====== Transitions ====== */
+.fade-enter-active { transition: opacity 0.2s ease; }
+.fade-leave-active { transition: opacity 0.15s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
-.toast-fade-enter-active { animation: toastIn 0.2s ease; }
-.toast-fade-leave-active { animation: toastOut 0.15s ease forwards; }
-@keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(-8px); } }
-@keyframes toastOut { to { opacity:0; } }
+
+/* Toast */
+.toast-fade-enter-active { animation: toastIn 0.3s ease; }
+.toast-fade-leave-active { animation: toastOut 0.2s ease forwards; }
+@keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(-12px) scale(0.9); } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }
+@keyframes toastOut { to { opacity:0; transform:translateX(-50%) translateY(-12px); } }
+
+/* Note card */
+.note-card {
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.note-card:active {
+  transform: scale(0.95);
+}
+@keyframes noteAppear {
+  from { opacity:0; transform: scale(0.8) translateY(10px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+.note-card { animation: noteAppear 0.3s ease both; }
+.note-card:nth-child(1) { animation-delay: 0s; }
+.note-card:nth-child(2) { animation-delay: 0.03s; }
+.note-card:nth-child(3) { animation-delay: 0.06s; }
+.note-card:nth-child(4) { animation-delay: 0.09s; }
+.note-card:nth-child(5) { animation-delay: 0.12s; }
+.note-card:nth-child(6) { animation-delay: 0.15s; }
+
+/* Dialog */
+.dialog {
+  animation: dialogPop 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+@keyframes dialogPop {
+  from { opacity:0; transform: scale(0.85); }
+  to   { opacity:1; transform: scale(1); }
+}
+
+/* Editor slide-in */
+.view-editor {
+  animation: editorSlideUp 0.25s ease;
+}
+@keyframes editorSlideUp {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* Game view fade */
+.view-game {
+  animation: gameFadeIn 0.3s ease;
+}
+@keyframes gameFadeIn {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+
+/* Unlock celebration */
+@keyframes unlockPulse {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.08); }
+}
+.stats-bar .next-unlock {
+  animation: unlockPulse 1s ease infinite;
+}
+
+/* Bottom bar button hover */
+.bottombar .btn {
+  transition: transform 0.1s ease;
+}
+.bottombar .btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Win98 window button hover */
+.topbar .btn:hover {
+  background: #dfdfdf;
+}
+
+/* Game result score pop */
+.score-big {
+  animation: scoreCount 0.5s ease;
+}
+@keyframes scoreCount {
+  from { transform: scale(0.5); opacity:0; }
+  to   { transform: scale(1); opacity:1; }
+}

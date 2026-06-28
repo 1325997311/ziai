@@ -57,5 +57,8 @@
 ---
 
 ## 当前进度
-- [x] v0: 初版MVP (已提交)
-- [ ] v01: 进行中...
+- [x] v0: 初版MVP
+- [x] v01: ES模块化 + 配置抽离 (config.js)
+- [x] v02: EventBus解耦 (eventbus.js)
+- [x] v03: 对象池 (pool.js)
+- [ ] v04: 配置文件热调参...
