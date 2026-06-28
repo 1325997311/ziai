@@ -6,7 +6,7 @@ const GameUI = (() => {
   const B = '#000', W = '#fff';
 
   function draw(ctx, gs) {
-    const { state, score, lives, player, thief, abilities, stolenNote,
+    const { state, score, lives, player, thief, abilities, stolenNotes,
             speedUpWarning, speedUpBuffer, currentTier, speedTiers, tierScores, speed } = gs;
     const WW = 400;
 
@@ -14,16 +14,21 @@ const GameUI = (() => {
       ctx.fillStyle = 'rgba(255,255,255,0.92)';
       ctx.fillRect(0, 0, WW, 700);
       ctx.fillStyle = B;
-      ctx.font = 'bold 22px system-ui';
+      ctx.font = 'bold 20px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText('🦹 小偷正在偷走', WW/2, 260);
-      ctx.font = 'bold 24px system-ui';
-      ctx.fillText('《' + (stolenNote?.title || '空白笔记') + '》', WW/2, 300);
+      const noteList = (stolenNotes || []).map(n => '《' + (n.title || '笔记') + '》').join(' ');
+      const catchSc = Thief.getCatchScore();
+      const lv = Thief.getLevel();
+      ctx.fillText('🥷 Lv.' + lv + ' 小偷偷走了', WW/2, 250);
+      ctx.font = 'bold 16px system-ui';
+      ctx.fillText(noteList || '《空白笔记》', WW/2, 295);
       ctx.font = '14px system-ui';
       ctx.fillStyle = '#555';
-      ctx.fillText('坚持跑到 5000 分才能追上小偷！', WW/2, 350);
+      ctx.fillText('坚持跑到 ' + catchSc + ' 分才能追上！', WW/2, 345);
+      if (lv >= 2) ctx.fillText('⚠️ 小偷会丢石头！', WW/2, 370);
+      ctx.fillStyle = B;
       ctx.font = '16px system-ui';
-      ctx.fillText('点击屏幕开始', WW/2, 390);
+      ctx.fillText('点击屏幕开始', WW/2, 405);
       ctx.textAlign = 'start';
       return;
     }
@@ -44,14 +49,15 @@ const GameUI = (() => {
     }
 
     // Status: chasing or waiting for score
-    const catchScore = 5000;
-    if (score < catchScore) {
+    const catchSc = Thief.getCatchScore();
+    const lv = Thief.getLevel();
+    if (score < catchSc) {
       ctx.fillStyle = B;
-      ctx.font = 'bold 13px system-ui';
+      ctx.font = 'bold 12px system-ui';
       ctx.textAlign = 'center';
-      const remaining = catchScore - score;
-      ctx.fillText('🏃 坚持到 ' + catchScore + ' 分即可追上小偷！', WW/2, 42);
-      ctx.fillText('还需 ' + remaining + ' 分', WW/2, 58);
+      const remaining = catchSc - score;
+      ctx.fillText('Lv.' + lv + ' 🥷 还需 ' + remaining + ' 分可追', WW/2, 42);
+      if (lv >= 2) ctx.fillText('⚠️ 小偷会丢石头！', WW/2, 57);
       ctx.textAlign = 'left';
     } else {
       // Distance bar

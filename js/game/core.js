@@ -8,11 +8,12 @@ const GameCore = (() => {
   let state, player, particles;
   let speed, score, lives;
   let animId, lastTime;
-  let abilities, stolenNote;
+  let abilities, stolenNotes;
   let onWin, onLose, onLifeLost;
   let flashAlpha = 0;
   let lastError = '';
   let worldOffset = 0;
+  let catchScore = 5000;
 
   // 加速系统
   const SPEED_TIERS = [2.5, 3.5, 5, 6.5, 8, 10, 12];
@@ -30,7 +31,8 @@ const GameCore = (() => {
     canvas.width = W;
     canvas.height = H;
     abilities = opts.abilities || ['jump'];
-    stolenNote = opts.stolenNote || { title: '空白笔记' };
+    stolenNotes = opts.stolenNotes || [{ title: '空白笔记' }];
+    catchScore = opts.catchScore || 25000;
     onWin = opts.onWin;
     onLose = opts.onLose;
     onLifeLost = opts.onLifeLost;
@@ -38,6 +40,7 @@ const GameCore = (() => {
     GameInput.attach();
     Obstacles.create();
     Thief.create();
+    Thief.init({ thiefLevel: opts.thiefLevel || 1, catchScore });
 
     state = 'ready';
     player = new Player.PlayerState(abilities);
@@ -123,8 +126,8 @@ const GameCore = (() => {
     if (GameInput.consumeDash()) player.dash();
     if (GameInput.consumePause()) { state = 'paused'; return; }
 
-    player.update();
-    Thief.update(speed, worldOffset, score);
+    player.update(speed / 2.5); // scale physics with speed
+    Thief.update(speed, worldOffset, score, fm);
     // 缓冲期不生成障碍物
     if (speedUpWarning === 0 && speedUpBuffer === 0) {
       Obstacles.update(speed, fm, score);
@@ -133,28 +136,36 @@ const GameCore = (() => {
       Obstacles.updateMoveOnly(speed, fm);
     }
 
-    // Collisions (skip during buffer - no new obstacles anyway)
+    // Collisions
     if (!player.invincible && player.dashTimer === 0) {
       const ph = { x: 90, y: player.y, w: player.w, h: player.h };
+      let hit = false;
+
+      // Ground obstacles
       for (const obs of Obstacles.all()) {
         if (!obs || obs.x + obs.w < 90 || obs.x > 90 + player.w) continue;
         if (ph.x < obs.x + obs.w && ph.x + ph.w > obs.x &&
-            ph.y < obs.y + obs.h && ph.y + ph.h > obs.y) {
-          if (player.die()) {
-            lives--;
-            if (lives <= 0) {
-              state = 'lost';
-              if (onLose) onLose({ score, stolenNote, reason: 'dead' });
-              return;
-            } else {
-              if (onLifeLost) onLifeLost({ lives, score });
-              flashAlpha = 0.6;
-              player.reset(abilities);
-              player.invincible = true;
-              player.invincibleTimer = 120;
-              Obstacles.clearNear(90, 200);
-            }
-          }
+            ph.y < obs.y + obs.h && ph.y + ph.h > obs.y) { hit = true; break; }
+      }
+
+      // Thief-thrown rocks
+      if (!hit && Thief.checkRockCollision(90, player.w, player.y, player.h)) {
+        hit = true;
+      }
+
+      if (hit && player.die()) {
+        lives--;
+        if (lives <= 0) {
+          state = 'lost';
+          if (onLose) onLose({ score, stolenNotes, reason: 'dead' });
+          return;
+        } else {
+          if (onLifeLost) onLifeLost({ lives, score });
+          flashAlpha = 0.6;
+          player.reset(abilities);
+          player.invincible = true;
+          player.invincibleTimer = 120;
+          Obstacles.clearNear(90, 200);
         }
       }
     }
@@ -163,17 +174,17 @@ const GameCore = (() => {
 
     score += Math.floor(10 * fm);
 
-    if (score >= Thief.CATCH_SCORE && playerWorldX >= thiefWorldX - 25) {
+    if (score >= catchScore && playerWorldX >= thiefWorldX - 25) {
       state = 'won';
       score += 500;
-      if (stolenNote.content) score += stolenNote.content.length;
-      if (onWin) onWin({ score, stolenNote });
+      if (stolenNotes.length > 0) score += stolenNotes.reduce((s,n) => s + (n.content||'').length, 0);
+      if (onWin) onWin({ score, stolenNotes });
       return;
     }
 
     if (dist > W * 3) {
       state = 'lost';
-      if (onLose) onLose({ score, stolenNote, reason: 'escaped' });
+      if (onLose) onLose({ score, stolenNotes, reason: 'escaped' });
       return;
     }
 
@@ -189,19 +200,39 @@ const GameCore = (() => {
     try { Renderer.drawGround(ctx, scrollX); } catch(e) {}
 
     try { for (const o of Obstacles.all()) Renderer.drawObstacle(ctx, o); } catch(e) {}
+    // Thrown rocks (ground obstacles from thief)
+    try {
+      for (const r of Thief.getThrownRocks()) {
+        Renderer.drawObstacle(ctx, { type: 'rock', x: r.x, y: r.y, w: r.w, h: r.h });
+      }
+    } catch(e) {}
 
     try {
       const t = Thief.getScreenPos(worldOffset);
       if (t && t.x !== undefined) {
         Renderer.drawThief(ctx, t);
-        if (score < Thief.CATCH_SCORE) {
+        // Throw animation: rock above thief's head
+        const ta = Thief.getThrowAnim();
+        if (ta > 0) {
+          const bob = Math.sin(t.frame*0.8)*2;
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(t.x + 25, t.y + bob - 20, 14, 14);
+          ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+          ctx.strokeRect(t.x + 25, t.y + bob - 20, 14, 14);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(t.x + 29, t.y + bob - 17, 4, 3);
+          // Arm
+          ctx.fillStyle = '#000';
+          ctx.fillRect(t.x + 20, t.y + bob - 6, 7, 6);
+        }
+        if (score < catchScore) {
           ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
           ctx.setLineDash([4, 4]);
           ctx.strokeRect(t.x - 4, t.y - 4, t.w + 8, t.h + 8);
           ctx.setLineDash([]);
         }
       }
-    } catch(e) {}
+    } catch(e) { console.warn('drawThief error:', e); }
 
     try { if (player) Renderer.drawPlayer(ctx, { ...player, x: 90 }); } catch(e) {}
     try { Renderer.drawSpeedLines(ctx, speed); } catch(e) {}
@@ -213,7 +244,7 @@ const GameCore = (() => {
         player: { x: worldOffset + 90, y: player?.y || 0 },
         thief: t || { x: worldOffset + 600 },
         speed, abilities: abilities || [],
-        stolenNote: stolenNote || {},
+        stolenNotes: stolenNotes || [],
         speedUpWarning, speedUpBuffer,
         currentTier, speedTiers: SPEED_TIERS, tierScores: TIER_SCORES,
       });

@@ -42,6 +42,9 @@ const app = createApp({
     const importInput = ref(null);
     let gameRunning = false;
     let _canvasTap = null; // tracked canvas tap handler
+    let _lastGameStolen = null; // save for "再来一局"
+    let _lastGameLevel = 1;
+    let _lastGameCatch = 25000;
 
     // ---- 计算属性 ----
     const noteCount = computed(() => notes.value.length);
@@ -240,23 +243,44 @@ const app = createApp({
         showToast('📝', '还没有笔记，先写一篇吧！');
         return;
       }
-      const stolen = Notes.randomPick();
+      // Steal ceil(notes/5) notes
+      const stealCount = Math.ceil(notes.value.length / 5);
+      const allNotes = [...notes.value];
+      const stolenNotes = [];
+      for (let i = 0; i < stealCount; i++) {
+        const idx = Math.floor(Math.random() * allNotes.length);
+        stolenNotes.push(allNotes.splice(idx, 1)[0]);
+      }
+      const level = stolenNotes.length;
+      const thiefLevels = ['', '🥷 小偷 Lv.2', '🥷 小偷 Lv.3', '🥷 小偷 Lv.4', '🥷 小偷 Lv.5+'];
+      const levelName = thiefLevels[Math.min(level - 1, 4)] || '🥷 小偷 Lv.1';
+      const noteNames = stolenNotes.map(n => '《' + (n.title || '未命名') + '》').join('、');
+      const catchScores = [0, 25000, 40000, 60000, 90000, 125000];
+      const catchScore = catchScores[Math.min(level, 5)];
+
       dialog.value = {
         show: true,
         icon: '🦹',
-        title: '小偷来袭！',
-        msg: `正在偷走《${stolen.title || '未命名笔记'}》！是否追击？`,
+        title: levelName + ' 来袭！',
+        msg: `偷走了 ${level} 份笔记：${noteNames}\n需要跑到 ${catchScore} 分才能追上！`,
         confirm: '追！',
         cancel: '算了',
         onConfirm: () => {
           dialog.value.show = false;
-          startGame(stolen);
+          startGame(stolenNotes, level, catchScore);
         },
         onCancel: () => {},
       };
     }
 
-    function startGame(stolenNote) {
+    function startGame(stolenNotes, thiefLevel, catchScore) {
+      // Save for "再来一局"
+      if (stolenNotes) {
+        _lastGameStolen = stolenNotes;
+        _lastGameLevel = thiefLevel || 1;
+        _lastGameCatch = catchScore || 5000;
+      }
+
       // Clean up previous game + tap handler
       GameCore.destroy();
       if (_canvasTap && gameCanvas.value) {
@@ -273,29 +297,37 @@ const app = createApp({
         const canvas = gameCanvas.value;
         if (!canvas) { console.error('[App] No canvas element'); return; }
 
-        const stolen = stolenNote || Notes.randomPick() || { title: '空白笔记', content: '' };
+        const notes = stolenNotes || _lastGameStolen || [Notes.randomPick() || { title: '空白笔记', content: '' }];
+        const level = thiefLevel || _lastGameLevel || 1;
+        const catchTarget = catchScore || _lastGameCatch || 5000;
 
         try {
         GameCore.init(canvas, {
           abilities: abilities.value,
-          stolenNote: stolen,
+          stolenNotes: notes,
+          thiefLevel: level,
+          catchScore: catchTarget,
           onWin: (r) => {
             gameRunning = false;
-            saveScore(r.score, stolen);
+            const sn = r.stolenNotes || notes;
+            saveScore(r.score, sn[0]);
+            const names = sn.map(n => '《' + (n.title || '笔记') + '》').join('、');
             result.value = {
               show: true, icon: '🎉', title: '夺回笔记！',
-              msg: `成功追回了《${stolen.title || '笔记'}》！`, score: r.score,
+              msg: `成功追回了 ${names}！`, score: r.score,
             };
           },
           onLose: (r) => {
             gameRunning = false;
-            saveScore(r.score, stolen);
+            const sn = r.stolenNotes || notes;
+            saveScore(r.score, sn[0]);
+            const names = sn.map(n => '《' + (n.title || '笔记') + '》').join('、');
             result.value = {
               show: true, icon: r.reason === 'dead' ? '💀' : '😢',
               title: r.reason === 'dead' ? '你倒下了...' : '被逃走了...',
               msg: r.reason === 'dead'
-                ? `小偷带着《${stolen.title || '笔记'}》逃之夭夭...\n别担心，笔记还在你的收藏里！`
-                : `小偷带着《${stolen.title || '笔记'}》消失了。别担心，笔记还在！`,
+                ? `小偷带着 ${names} 逃之夭夭...\n别担心，笔记还在你的收藏里！`
+                : `小偷带着 ${names} 消失了。别担心，笔记还在！`,
               score: r.score,
             };
           },

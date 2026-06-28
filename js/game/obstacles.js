@@ -6,20 +6,23 @@ const Obstacles = (() => {
   const SPAWN_X = 500;
 
   const TYPES = [
-    { type:'cactus_small', w:12, h:28, yOff:0,   weight:4 },
-    { type:'cactus_large', w:12, h:44, yOff:-14, weight:3 },
-    { type:'rock',         w:18, h:12, yOff:0,   weight:3 },
-    { type:'bird',         w:24, h:12, yOff:-70, weight:2 },
-    { type:'bird',         w:24, h:12, yOff:-110,weight:1 },
+    { type:'cactus_small', w:12, h:28, yOff:0,   weight:5 },
+    { type:'cactus_large', w:12, h:44, yOff:-14, weight:4 },
+    { type:'bird',         w:24, h:12, yOff:-70, weight:3 },
+    { type:'bird',         w:24, h:12, yOff:-110,weight:2 },
     { type:'crack',        w:36, h:8,  yOff:0,   weight:1 },
   ];
 
+  const MIN_GAP = 130; // minimum pixels between obstacles
+
   let items = [];
   let spawnTimer = 0;
+  let lastSpawnX = -999;
 
   function create() {
     items = [];
     spawnTimer = 0;
+    lastSpawnX = -999;
   }
 
   function update(speed, frameMult, score) {
@@ -43,9 +46,21 @@ const Obstacles = (() => {
     let r = Math.random() * totalW;
     let chosen = TYPES[0];
     for (const t of TYPES) { r -= t.weight; if (r <= 0) { chosen = t; break; } }
+    // Ensure minimum gap from last obstacle
+    let sx = SPAWN_X + Math.random() * 100;
+    if (lastSpawnX > 0 && sx - lastSpawnX < MIN_GAP) {
+      sx = lastSpawnX + MIN_GAP + Math.random() * 60;
+    }
+    // Also check against thief-thrown rocks
+    for (const r of (typeof Thief !== 'undefined' && Thief.getThrownRocks ? Thief.getThrownRocks() : [])) {
+      if (Math.abs(sx - r.x) < MIN_GAP) {
+        sx = r.x + MIN_GAP + Math.random() * 60;
+      }
+    }
+    lastSpawnX = sx;
     items.push({
       type: chosen.type,
-      x: SPAWN_X + Math.random() * 100,
+      x: sx,
       y: GROUND_Y - chosen.h + chosen.yOff,
       w: chosen.w, h: chosen.h,
     });

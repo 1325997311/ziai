@@ -145,7 +145,7 @@
         <p>{{ result.msg }}</p>
         <p class="score-big" v-if="result.score > 0">🏆 {{ result.score }}</p>
         <div class="dialog-actions">
-          <button class="btn primary" @click="result.show=false; startGame()">🔄 再来一局</button>
+          <button class="btn primary" @click="result.show=false; startGame(null, 0, 0)">🔄 再来一局</button>
           <button class="btn" @click="result.show=false; quitGame()">🏠 返回</button>
         </div>
       </div>
@@ -155,16 +155,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
 <script>window.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{const l=document.getElementById('loading');if(l)l.style.display='none';},3000);});</script>
-<script src="js/storage.js?v=11"></script>
-<script src="js/notes.js?v=11"></script>
-<script src="js/progression.js?v=11"></script>
-<script src="js/game/input.js?v=11"></script>
-<script src="js/game/renderer.js?v=11"></script>
-<script src="js/game/player.js?v=11"></script>
-<script src="js/game/thief.js?v=11"></script>
-<script src="js/game/obstacles.js?v=11"></script>
-<script src="js/game/ui.js?v=11"></script>
-<script src="js/game/core.js?v=11"></script>
-<script src="js/app.js?v=11"></script>
+<script src="js/storage.js?v=15"></script>
+<script src="js/notes.js?v=15"></script>
+<script src="js/progression.js?v=15"></script>
+<script src="js/game/input.js?v=15"></script>
+<script src="js/game/renderer.js?v=15"></script>
+<script src="js/game/player.js?v=15"></script>
+<script src="js/game/thief.js?v=15"></script>
+<script src="js/game/obstacles.js?v=15"></script>
+<script src="js/game/ui.js?v=15"></script>
+<script src="js/game/core.js?v=15"></script>
+<script src="js/app.js?v=15"></script>
 </body>
 </html>

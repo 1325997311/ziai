@@ -21,6 +21,7 @@ const Player = (() => {
       this.slideTimer=0; this.dashTimer=0; this.dashCooldown=0;
       this.invincible=false; this.invincibleTimer=0; this.trail=[];
       this.hitboxShrink=0.35;
+      this.speedMult=1;
     }
 
     getHitbox() {
@@ -28,13 +29,16 @@ const Player = (() => {
       return {x:this.x+sx, y:this.y+sy, w:this.w-sx*2, h:this.h-sy*2};
     }
 
-    update() {
+    update(speedMult) {
+      const mult = speedMult || 1;
+      this.speedMult = mult;
+      const g = GRAVITY * mult * mult; // g∝m² to keep height constant
       this.frame+=0.15;
       if(this.dashTimer>0){this.dashTimer--; if(this.dashTimer===0){this.state=this.onGround?'running':'jumping'; this.invincible=false;}}
       if(this.dashCooldown>0)this.dashCooldown--;
       if(this.invincibleTimer>0){this.invincibleTimer--; if(this.invincibleTimer===0&&this.dashTimer===0)this.invincible=false;}
       if(this.slideTimer>0){this.slideTimer--; if(this.slideTimer===0&&this.onGround){this.state='running'; this.y=GROUND_Y-this.h; this.h=H;}}
-      if(this.state!=='sliding'||!this.onGround){this.vy+=GRAVITY; this.y+=this.vy;}
+      if(this.state!=='sliding'||!this.onGround){this.vy+=g; this.y+=this.vy;}
       if(this.y>=GROUND_Y-this.h){this.y=GROUND_Y-this.h; this.vy=0; this.onGround=true; this.hasDoubleJumped=false; if(this.state==='jumping')this.state='running'; if(this.state==='sliding'&&this.slideTimer<=0){this.state='running'; this.h=H;}}
       else{this.onGround=false;}
       if(this.dashTimer>0){this.trail.push({x:this.x,y:this.y}); if(this.trail.length>5)this.trail.shift();}
@@ -43,8 +47,9 @@ const Player = (() => {
 
     jump() {
       if(this.dashTimer>0||this.state==='sliding')return;
-      if(this.onGround){this.vy=JUMP_VEL; this.state='jumping'; this.onGround=false; this.hasDoubleJumped=false;}
-      else if(this.canDoubleJump&&!this.hasDoubleJumped){this.vy=DOUBLE_JUMP_VEL; this.hasDoubleJumped=true;}
+      const m = this.speedMult || 1;
+      if(this.onGround){this.vy=JUMP_VEL * m; this.state='jumping'; this.onGround=false; this.hasDoubleJumped=false;}
+      else if(this.canDoubleJump&&!this.hasDoubleJumped){this.vy=DOUBLE_JUMP_VEL * m; this.hasDoubleJumped=true;}
     }
 
     slide() {
