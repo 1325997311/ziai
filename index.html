@@ -9,13 +9,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=Press+Start+2P&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KaiSerif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/reset.css">
-<link rel="stylesheet" href="css/main.css">
-<link rel="stylesheet" href="css/effects.css">
+<link rel="stylesheet" href="css/reset.css?v=20">
+<link rel="stylesheet" href="css/main.css?v=20">
+<link rel="stylesheet" href="css/effects.css?v=20">
 </head>
 <body>
 
-<div id="loading">📝 加载中...</div>
 <div id="app" v-cloak>
 
   <!-- ====== 主视图 ====== -->
@@ -23,8 +22,12 @@
 
     <!-- 顶栏 -->
     <header class="topbar">
-      <span class="brand" @click="scrollToTop">📝 字弈</span>
-      <button class="btn game-btn" @click="onGameClick">🎮 追小偷</button>
+      <span class="brand" @click="scrollToTop">📝 字弈 v2.0</span>
+      <span style="display:flex;gap:4px">
+        <button class="btn sm" style="width:20px;height:20px;padding:0;font-size:12px;">─</button>
+        <button class="btn sm" style="width:20px;height:20px;padding:0;font-size:12px;">□</button>
+        <button class="btn sm" style="width:20px;height:20px;padding:0;font-size:12px;color:#c00;">✕</button>
+      </span>
     </header>
 
     <!-- 状态栏 -->
@@ -33,6 +36,7 @@
       <span class="sep">·</span>
       <span>{{ unlockedNames }}</span>
       <span v-if="nextUnlock" class="next-unlock">→ {{ nextUnlock.count - notes.length }}条解锁{{ nextUnlock.name }}</span>
+      <button class="btn game-btn" style="margin-left:auto" @click="onGameClick">🎮 追小偷</button>
     </div>
 
     <!-- 笔记列表 -->
@@ -45,16 +49,17 @@
 
     <div v-else class="note-list">
       <div v-for="n in notes" :key="n.id" class="note-card"
-           :style="{ fontFamily: n.fontFamily }"
-           :class="'effect-' + n.effect"
            @click="openEditor(n)">
+        <div class="note-icon">
+          <div class="note-icon-body"></div>
+          <div class="note-icon-fold"></div>
+          <div class="note-icon-arrow"></div>
+        </div>
         <div class="note-card-inner">
           <div class="note-card-title">{{ n.title || '未命名' }}</div>
-          <div class="note-card-preview" :class="n.effect ? '' : ''">{{ n.content }}</div>
           <div class="note-card-meta">
             <span v-if="n.effect" class="badge">{{ effectLabel(n.effect) }}</span>
             <span class="badge font-badge">{{ fontLabel(n.fontFamily) }}</span>
-            <span class="time">{{ timeAgo(n.updatedAt) }}</span>
           </div>
         </div>
       </div>
@@ -154,17 +159,16 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
-<script>window.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{const l=document.getElementById('loading');if(l)l.style.display='none';},3000);});</script>
-<script src="js/storage.js?v=15"></script>
-<script src="js/notes.js?v=15"></script>
-<script src="js/progression.js?v=15"></script>
-<script src="js/game/input.js?v=15"></script>
-<script src="js/game/renderer.js?v=15"></script>
-<script src="js/game/player.js?v=15"></script>
-<script src="js/game/thief.js?v=15"></script>
-<script src="js/game/obstacles.js?v=15"></script>
-<script src="js/game/ui.js?v=15"></script>
-<script src="js/game/core.js?v=15"></script>
-<script src="js/app.js?v=15"></script>
+<script src="js/storage.js?v=20"></script>
+<script src="js/notes.js?v=20"></script>
+<script src="js/progression.js?v=20"></script>
+<script src="js/game/input.js?v=20"></script>
+<script src="js/game/renderer.js?v=20"></script>
+<script src="js/game/player.js?v=20"></script>
+<script src="js/game/thief.js?v=20"></script>
+<script src="js/game/obstacles.js?v=20"></script>
+<script src="js/game/ui.js?v=20"></script>
+<script src="js/game/core.js?v=20"></script>
+<script src="js/app.js?v=20"></script>
 </body>
 </html>

@@ -1,75 +1,76 @@
 /**
- * 渲染器 — 竖屏黑白像素风
+ * 渲染器 — Win98 像素风
  */
 const Renderer = (() => {
   const W = 400, H = 700;
   const GROUND_Y = 560;
-  const C = { black: '#000', white: '#fff', gray: '#888', lgray: '#ccc', dgray: '#333' };
+  // Win98 palette
+  const C = {
+    desktop: '#008080',
+    bg: '#c0c0c0',
+    white: '#fff',
+    black: '#000',
+    navy: '#000080',
+    gray: '#808080',
+    dgray: '#404040',
+    highlight: '#dfdfdf',
+    yellow: '#ffff00',
+    red: '#ff0000',
+    blue: '#0000ff',
+  };
 
   function drawSky(ctx, scrollX) {
-    // White sky
-    ctx.fillStyle = '#fff';
+    // Teal desktop sky
+    ctx.fillStyle = C.desktop;
     ctx.fillRect(0, 0, W, GROUND_Y);
 
-    // Black stars (small dots)
-    ctx.fillStyle = C.black;
-    [[30,40,1],[80,100,1],[150,30,1.5],[220,80,1],[290,50,1.5],[350,90,1],[60,160,1],[180,140,1.5],[320,120,1],[400,60,1.5]].forEach(([sx,sy,sr]) => {
-      const px = ((sx - scrollX * 0.08) % W + W) % W;
-      ctx.beginPath(); ctx.arc(px, sy, sr, 0, Math.PI*2); ctx.fill();
-    });
-
-    // Moon outline
-    const mx = ((300 - scrollX * 0.03) % (W + 150)) - 75;
-    ctx.strokeStyle = C.black;
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(mx, 65, 30, 0, Math.PI*2); ctx.stroke();
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(mx + 10, 58, 24, 0, Math.PI*2); ctx.fill();
-
-    // Clouds (outline style)
-    ctx.strokeStyle = C.dgray;
-    ctx.lineWidth = 1.5;
-    drawCloud(ctx, 50, 120, 0.7, scrollX * 0.1);
-    drawCloud(ctx, 250, 150, 0.9, scrollX * 0.08);
+    // Win98 clouds (white squares with shadow)
+    ctx.fillStyle = C.white;
+    ctx.shadowColor = C.dgray; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
+    drawWinCloud(ctx, 80, 90, 1.2, scrollX * 0.1);
+    drawWinCloud(ctx, 280, 60, 0.8, scrollX * 0.08);
+    drawWinCloud(ctx, 360, 110, 1, scrollX * 0.12);
+    ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; ctx.shadowColor = 'transparent';
   }
 
-  function drawCloud(ctx, bx, by, s, off) {
+  function drawWinCloud(ctx, bx, by, s, off) {
     const x = ((bx - off) % (W + 200)) - 100;
-    ctx.save(); ctx.translate(x, by); ctx.scale(s, s);
-    ctx.beginPath();
-    ctx.arc(0,0,22,0,Math.PI*2); ctx.arc(26,-8,18,0,Math.PI*2);
-    ctx.arc(48,0,22,0,Math.PI*2); ctx.arc(18,5,20,0,Math.PI*2);
-    ctx.stroke();
-    ctx.restore();
+    ctx.fillStyle = C.white;
+    ctx.fillRect(x, by, 40 * s, 20 * s);
+    ctx.fillRect(x + 15 * s, by - 8 * s, 25 * s, 16 * s);
+    ctx.strokeStyle = C.dgray; ctx.lineWidth = 1;
+    ctx.strokeRect(x, by, 40 * s, 20 * s);
   }
 
   function drawGround(ctx, scrollX) {
+    // Gray taskbar-like ground
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+    // Top border (raised)
+    ctx.fillStyle = C.white;
+    ctx.fillRect(0, GROUND_Y, W, 3);
+    ctx.fillStyle = C.gray;
+    ctx.fillRect(0, GROUND_Y + 3, W, 1);
+    // Grid pattern
     const TW = 32;
     const start = Math.floor(scrollX / TW);
+    ctx.fillStyle = C.dgray;
     for (let i = 0; i < Math.ceil(W/TW)+2; i++) {
       const tx = (start+i)*TW - scrollX;
       if (tx < -TW || tx > W) continue;
-      // White ground with black border
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(tx, GROUND_Y, TW, H-GROUND_Y);
-      ctx.fillStyle = C.black;
-      ctx.fillRect(tx, GROUND_Y, TW, 3);
-      // Brick pattern
-      if ((start+i) % 3 === 0) {
-        ctx.fillStyle = C.lgray;
-        ctx.fillRect(tx + 4, GROUND_Y + 8, TW - 8, 2);
-        ctx.fillRect(tx + 14, GROUND_Y + 20, TW - 28, 2);
+      if ((start+i) % 4 === 0) {
+        ctx.fillRect(tx + 4, GROUND_Y + 12, TW - 8, 1);
+        ctx.fillRect(tx + 14, GROUND_Y + 30, TW - 28, 1);
       }
     }
   }
 
-  // ====== RABBIT (B&W pixel) ======
+  // ====== RABBIT (Win98 cursor style) ======
   function drawPlayer(ctx, p) {
     if (p.invincible && Math.floor(Date.now()/100)%2===0) return;
     const {x,y,w,h,state,frame} = p;
     ctx.save(); ctx.translate(x, y);
 
-    // Trail during dash
     if (state==='dash' && p.trail) {
       p.trail.forEach((t,i) => {
         ctx.globalAlpha = 0.12 * (i+1) / p.trail.length;
@@ -84,124 +85,103 @@ const Renderer = (() => {
   }
 
   function drawRabbit(ctx, ox, oy, state, frame, bob) {
-    const b = '#000', w = '#fff';
     const earWiggle = state === 'running' ? Math.sin(frame * 1.2) * 2 : 0;
 
     if (state === 'sliding') {
-      // Sliding rabbit — stretched low, ears back
-      // Ears flat back
-      ctx.fillStyle = b;
-      ctx.fillRect(ox + 3, oy + 8, 18, 4);
-      ctx.fillRect(ox + 1, oy + 7, 5, 3);
-      // Body (long & low)
-      ctx.fillStyle = w;
-      ctx.fillRect(ox + 2, oy + 12, 22, 11);
-      ctx.strokeStyle = b; ctx.lineWidth = 1.5;
-      ctx.strokeRect(ox + 2, oy + 12, 22, 11);
-      // Eye
-      ctx.fillStyle = b;
+      // Flat rabbit
+      ctx.fillStyle = C.white; ctx.strokeStyle = C.black; ctx.lineWidth = 1.5;
+      ctx.fillRect(ox + 2, oy + 12, 22, 10); ctx.strokeRect(ox + 2, oy + 12, 22, 10);
+      ctx.fillStyle = C.black;
       ctx.fillRect(ox + 4, oy + 14, 2, 2);
-      // Tail
-      ctx.fillStyle = w;
-      ctx.fillRect(ox + 24, oy + 14, 4, 4);
-      ctx.strokeStyle = b;
-      ctx.strokeRect(ox + 24, oy + 14, 4, 4);
+      // Flat ears
+      ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
+      ctx.fillRect(ox + 4, oy + 8, 14, 3); ctx.strokeRect(ox + 4, oy + 8, 14, 3);
     } else {
-      // Ears (tall, signature rabbit feature)
-      ctx.fillStyle = w;
+      // Ears
+      ctx.fillStyle = C.white; ctx.strokeStyle = C.black; ctx.lineWidth = 1.5;
       ctx.fillRect(ox + 6, oy + bob - 14 + earWiggle, 5, 16);
-      ctx.fillRect(ox + 15, oy + bob - 14 - earWiggle, 5, 16);
-      ctx.strokeStyle = b; ctx.lineWidth = 1.5;
       ctx.strokeRect(ox + 6, oy + bob - 14 + earWiggle, 5, 16);
+      ctx.fillRect(ox + 15, oy + bob - 14 - earWiggle, 5, 16);
       ctx.strokeRect(ox + 15, oy + bob - 14 - earWiggle, 5, 16);
-      // Inner ear
-      ctx.fillStyle = b;
+      // Inner ears
+      ctx.fillStyle = C.navy;
       ctx.fillRect(ox + 7, oy + bob - 10 + earWiggle, 3, 8);
       ctx.fillRect(ox + 16, oy + bob - 10 - earWiggle, 3, 8);
 
       // Head
-      ctx.fillStyle = w;
+      ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
       ctx.fillRect(ox + 5, oy + bob + 1, 18, 13);
-      ctx.strokeStyle = b; ctx.lineWidth = 1.5;
       ctx.strokeRect(ox + 5, oy + bob + 1, 18, 13);
-      // Eye
-      ctx.fillStyle = b;
+      // Eye (red Win98 style)
+      ctx.fillStyle = C.red;
       ctx.fillRect(ox + 8, oy + bob + 4, 3, 3);
-      // Nose
-      ctx.fillStyle = b;
+      ctx.fillStyle = C.black;
       ctx.fillRect(ox + 4, oy + bob + 7, 2, 1);
 
       // Body
-      const bodyLean = state === 'dashing' ? 2 : 0;
-      ctx.fillStyle = w;
-      ctx.fillRect(ox + 3 + bodyLean, oy + bob + 14, 22, 14);
-      ctx.strokeStyle = b; ctx.lineWidth = 1.5;
-      ctx.strokeRect(ox + 3 + bodyLean, oy + bob + 14, 22, 14);
+      const lean = state === 'dashing' ? 2 : 0;
+      ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
+      ctx.fillRect(ox + 3 + lean, oy + bob + 14, 22, 14);
+      ctx.strokeRect(ox + 3 + lean, oy + bob + 14, 22, 14);
 
       // Legs
-      const legPhase = Math.sin(frame * 0.8) * (state === 'running' ? 3 : 1);
-      ctx.fillStyle = w;
-      ctx.fillRect(ox + 5, oy + bob + 28 + legPhase, 8, 5);
-      ctx.fillRect(ox + 13, oy + bob + 28 - legPhase, 8, 5);
-      ctx.strokeStyle = b; ctx.lineWidth = 1;
-      ctx.strokeRect(ox + 5, oy + bob + 28 + legPhase, 8, 5);
-      ctx.strokeRect(ox + 13, oy + bob + 28 - legPhase, 8, 5);
+      const lp = Math.sin(frame * 0.8) * (state === 'running' ? 3 : 1);
+      ctx.fillStyle = C.white; ctx.strokeStyle = C.black; ctx.lineWidth = 1;
+      ctx.fillRect(ox + 5, oy + bob + 28 + lp, 8, 5);
+      ctx.strokeRect(ox + 5, oy + bob + 28 + lp, 8, 5);
+      ctx.fillRect(ox + 13, oy + bob + 28 - lp, 8, 5);
+      ctx.strokeRect(ox + 13, oy + bob + 28 - lp, 8, 5);
 
-      // Tail (fluffy circle)
-      ctx.fillStyle = w;
+      // Tail
+      ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
       ctx.beginPath();
-      ctx.arc(ox + 27 + bodyLean, oy + bob + 20, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = b; ctx.lineWidth = 1;
-      ctx.stroke();
+      ctx.arc(ox + 27 + lean, oy + bob + 20, 5, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
 
-      // Dash effect
+      // Dash lines
       if (state === 'dashing') {
-        ctx.fillStyle = b;
-        ctx.fillRect(ox - 6, oy + 18, 4, 8);
+        ctx.fillStyle = C.black;
+        ctx.fillRect(ox - 6, oy + 18, 4, 6);
         ctx.fillRect(ox - 10, oy + 20, 3, 4);
       }
     }
   }
 
-  // ====== THIEF (B&W) ======
+  // ====== THIEF (Win98 error dialog style) ======
   function drawThief(ctx, t) {
     const {x,y,state,frame} = t;
     ctx.save(); ctx.translate(x, y);
     const bob = Math.sin(frame*0.8)*2;
-    const b = '#000', w = '#fff';
 
-    // Body
-    ctx.fillStyle = b;
-    ctx.fillRect(6, bob + 13, 18, 14);
+    // Body (gray Win98 window)
+    ctx.fillStyle = C.bg; ctx.strokeStyle = C.black; ctx.lineWidth = 1.5;
+    ctx.fillRect(6, bob + 13, 18, 14); ctx.strokeRect(6, bob + 13, 18, 14);
     // Head
-    ctx.fillStyle = w;
-    ctx.fillRect(10, bob + 2, 12, 12);
-    ctx.strokeStyle = b; ctx.lineWidth = 1.5;
-    ctx.strokeRect(10, bob + 2, 12, 12);
-    // Mask
-    ctx.fillStyle = b;
+    ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
+    ctx.fillRect(10, bob + 2, 12, 12); ctx.strokeRect(10, bob + 2, 12, 12);
+    // Mask (dark)
+    ctx.fillStyle = C.dgray;
     ctx.fillRect(8, bob + 5, 16, 5);
-    // Eye hole
-    ctx.fillStyle = w;
+    ctx.fillStyle = C.white;
     ctx.fillRect(12, bob + 6, 3, 2);
-    // Scroll (stolen note)
-    ctx.fillStyle = w;
-    ctx.fillRect(2, bob + 12, 6, 10);
-    ctx.strokeStyle = b; ctx.lineWidth = 1;
-    ctx.strokeRect(2, bob + 12, 6, 10);
+    // Scroll (Win98 help icon)
+    ctx.fillStyle = C.yellow; ctx.strokeStyle = C.black; ctx.lineWidth = 1;
+    ctx.fillRect(2, bob + 12, 6, 10); ctx.strokeRect(2, bob + 12, 6, 10);
+    ctx.fillStyle = C.blue;
+    ctx.fillRect(3, bob + 14, 4, 1);
+    ctx.fillRect(3, bob + 16, 4, 1);
     // Legs
     const lp = Math.sin(frame*0.8)*4;
-    ctx.fillStyle = b;
+    ctx.fillStyle = C.black;
     ctx.fillRect(10, bob + 27 + lp, 5, 5);
     ctx.fillRect(17, bob + 27 - lp, 5, 5);
 
     if (state==='taunting') {
-      ctx.fillStyle = w;
+      ctx.fillStyle = C.red;
       ctx.fillRect(14, 14, 6, 2);
     }
     if (state==='panicking') {
-      ctx.fillStyle = b;
+      ctx.fillStyle = C.red;
       ctx.fillRect(8, -3, 4, 6);
       ctx.fillRect(12, -4, 4, 7);
       ctx.fillRect(16, -3, 4, 6);
@@ -209,60 +189,69 @@ const Renderer = (() => {
     ctx.restore();
   }
 
-  // ====== OBSTACLES (B&W) ======
+  // ====== OBSTACLES (Win98 icons) ======
   function drawObstacle(ctx, obs) {
     const {x,y,w,h,type} = obs;
     ctx.lineWidth = 1.5;
     switch(type) {
       case 'cactus_small':
-        ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000';
+        // Win98 error icon style
+        ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
         ctx.fillRect(x, y, w, h); ctx.strokeRect(x, y, w, h);
         ctx.fillRect(x+2, y-8, 3, 8); ctx.strokeRect(x+2, y-8, 3, 8);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(x+4, y+4, 2, h-8);
+        ctx.fillStyle = C.red;
+        ctx.fillRect(x+3, y+3, w-6, 3);
+        ctx.fillRect(x+4, y+11, w-8, 3);
         break;
       case 'cactus_large':
-        ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000';
+        ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
         ctx.fillRect(x, y, w, h); ctx.strokeRect(x, y, w, h);
-        ctx.fillRect(x+3, y-15, 3, 15); ctx.strokeRect(x+3, y-15, 3, 15);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(x+4, y+4, 2, h-8);
+        ctx.fillRect(x+2, y-15, 4, 15); ctx.strokeRect(x+2, y-15, 4, 15);
+        ctx.fillStyle = C.red;
+        ctx.fillRect(x+3, y+4, w-6, 4);
+        ctx.fillRect(x+3, y+16, w-6, 4);
         break;
       case 'rock':
-        ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000';
-        ctx.beginPath();
-        ctx.moveTo(x, y+h); ctx.lineTo(x+3, y+3);
-        ctx.lineTo(x+w/2, y); ctx.lineTo(x+w-3, y+3);
-        ctx.lineTo(x+w, y+h); ctx.closePath();
-        ctx.fill(); ctx.stroke();
-        ctx.fillStyle = '#000';
-        ctx.fillRect(x+8, y+4, 3, 2);
+        // Gray 3D box (Win98 button style)
+        ctx.fillStyle = C.bg; ctx.strokeStyle = C.black;
+        ctx.fillRect(x, y, w, h); ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = C.white;
+        ctx.fillRect(x+1, y+1, w-2, 2);
+        ctx.fillRect(x+1, y+1, 2, h-2);
+        ctx.fillStyle = C.dgray;
+        ctx.fillRect(x+1, y+h-3, w-2, 2);
+        ctx.fillRect(x+w-3, y+1, 2, h-2);
         break;
       case 'bird':
+        // Win98 folder icon bird
         const wu = Math.sin(Date.now()/100)>0;
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = C.yellow; ctx.strokeStyle = C.black;
         ctx.fillRect(x+2, y+(wu?2:6), w-4, 6);
-        ctx.fillRect(x, y+4, w, 4);
-        ctx.fillStyle = '#fff';
+        ctx.strokeRect(x+2, y+(wu?2:6), w-4, 6);
+        ctx.fillStyle = C.navy;
+        ctx.fillRect(x, y+4, w, 3);
+        ctx.fillStyle = C.white;
         ctx.fillRect(x+w-7, y+5, 2, 1);
         break;
       case 'bat':
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = C.dgray; ctx.strokeStyle = C.black;
         ctx.fillRect(x+3, y+2, w-6, 8);
-        ctx.fillRect(x, y+6, w, 4);
+        ctx.strokeRect(x+3, y+2, w-6, 8);
+        ctx.fillStyle = C.red;
+        ctx.fillRect(x+w/2-1, y+4, 2, 2);
         break;
       case 'wall':
-        ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000';
+        ctx.fillStyle = C.bg; ctx.strokeStyle = C.black;
         ctx.fillRect(x, y, w, h); ctx.strokeRect(x, y, w, h);
-        ctx.strokeStyle = '#000';
         for(let by=y; by<y+h; by+=10) {
+          ctx.strokeStyle = C.dgray;
           ctx.beginPath(); ctx.moveTo(x, by); ctx.lineTo(x+w, by); ctx.stroke();
         }
         break;
       case 'crack':
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = C.black;
         ctx.fillRect(x, GROUND_Y, w, 8);
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = C.desktop;
         ctx.fillRect(x+2, GROUND_Y, w-4, 8);
         break;
     }
@@ -270,7 +259,7 @@ const Renderer = (() => {
 
   function drawSpeedLines(ctx, speed) {
     if(speed<8)return;
-    ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=2;
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth=2;
     for(let i=0;i<6;i++){
       const sx=Math.random()*W, sy=Math.random()*GROUND_Y;
       ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx-20-speed*3,sy); ctx.stroke();

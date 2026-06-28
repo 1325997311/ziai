@@ -1,121 +1,62 @@
-/* ====== 特效字体 ====== */
+/* ====== Win98 特效字体 ====== */
 
-/* 霓虹灯 */
 .effect-neon {
-  color: #fff;
+  color: #000;
   text-shadow:
-    0 0 5px #0ff,
-    0 0 10px #0ff,
-    0 0 20px #0ff,
-    0 0 40px #0fa,
-    0 0 80px #0fa;
+    0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff;
 }
 
-/* 火焰字 */
 .effect-fire {
   background: linear-gradient(180deg, #ff0 0%, #f80 40%, #f00 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: none;
-  animation: fireFlicker 0.08s infinite alternate;
-}
-@keyframes fireFlicker {
-  0%   { filter: brightness(1) blur(0px); }
-  100% { filter: brightness(1.2) blur(0.3px); }
 }
 
-/* 像素风 */
 .effect-pixel {
   font-family: 'Press Start 2P', monospace;
-  font-size: 12px;
-  image-rendering: pixelated;
-  text-shadow:
-    2px 2px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000;
-  letter-spacing: 2px;
+  font-size: 9px;
+  text-shadow: 2px 2px 0 #ccc;
+  letter-spacing: 1px;
 }
 
-/* 彩虹字 */
 .effect-rainbow {
-  background: linear-gradient(90deg,
-    #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00
-  );
+  background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
   background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
+  -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: rainbowScroll 3s linear infinite;
 }
 @keyframes rainbowScroll {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
+  to { background-position: 200% 50%; }
 }
 
-/* 冰霜字 */
 .effect-ice {
   color: #a8d8ea;
-  text-shadow:
-    0 0 10px rgba(100,200,255,.8),
-    0 0 20px rgba(100,200,255,.5),
-    0 0 40px rgba(150,220,255,.3),
-    0 2px 4px rgba(0,0,0,.3);
-  background: linear-gradient(180deg, #d4f1ff 0%, #a8d8ea 50%, #6bb5d0 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 4px #6cf, 0 2px 2px rgba(0,0,0,.2);
 }
 
-/* 复古打字机 */
 .effect-typewriter {
-  font-family: 'JetBrains Mono', monospace;
-  color: #3d2b1f;
-  background: #f4e4c1;
-  padding: 4px 8px;
-  border-radius: 2px;
-  text-shadow: 1px 1px 0 rgba(0,0,0,.15);
-  box-shadow: inset 0 0 20px rgba(139,90,43,.15);
-  line-height: 1.9;
+  font-family: 'Courier New', monospace;
+  color: #333;
+  background: #f5f0e8;
+  padding: 4px 6px;
 }
 
-/* 恐怖字 */
 .effect-horror {
-  color: #c0392b;
-  text-shadow:
-    0 0 10px rgba(200,0,0,.8),
-    2px 2px 0 #000,
-    -1px -1px 0 #300;
-  animation: horrorShake 0.3s infinite;
-}
-@keyframes horrorShake {
-  0%, 100% { transform: skew(0deg, 0deg); }
-  25%  { transform: skew(1deg, 0.5deg); }
-  75%  { transform: skew(-1deg, -0.5deg); }
+  color: #c00;
+  text-shadow: 1px 1px 0 #600;
 }
 
-/* 描边字 */
 .effect-stroke {
   color: #fff;
   -webkit-text-stroke: 2px #000;
   paint-order: stroke fill;
-  font-weight: 900;
-  letter-spacing: 1px;
+  font-weight: bold;
 }
 
-/* 3D立体 */
 .effect-three-d {
-  color: #fff;
+  color: #000;
   text-shadow:
-    1px 1px 0 #888,
-    2px 2px 0 #777,
-    3px 3px 0 #666,
-    4px 4px 0 #555,
-    5px 5px 0 #444,
-    6px 6px 0 #333,
-    7px 7px 0 #222,
-    8px 8px 0 #111;
-  font-weight: 900;
-  letter-spacing: 2px;
+    1px 1px 0 #888, 2px 2px 0 #777, 3px 3px 0 #666;
+  font-weight: bold;
 }

@@ -42,7 +42,7 @@ const Thief = (() => {
     return { ...thief, x: thief.x - worldOffset };
   }
 
-  function update(speed, worldOffset, score, frameMult) {
+  function update(speed, worldOffset, score, frameMult, isBuffer) {
     if (!thief) return;
 
     const playerWorldX = worldOffset + 90;
@@ -79,8 +79,8 @@ const Thief = (() => {
       }
     }
 
-    // ---- 丢石头 (Lv2+) ----
-    if (level >= 2 && rockCooldown <= 0 && throwAnim <= 0) {
+    // ---- 丢石头 (Lv2+, 缓冲期禁止) ----
+    if (level >= 2 && rockCooldown <= 0 && throwAnim <= 0 && !isBuffer) {
       const screenX = thief.x - worldOffset;
       if (canPlaceRock(screenX)) {
         throwAnim = 35; // animation frames
@@ -111,6 +111,10 @@ const Thief = (() => {
     return true;
   }
 
+  function clearRocks() {
+    thrownRocks = [];
+  }
+
   function checkRockCollision(playerScreenX, playerW, playerY, playerH) {
     for (const r of thrownRocks) {
       if (r.x < playerScreenX + playerW && r.x + r.w > playerScreenX &&
@@ -122,5 +126,5 @@ const Thief = (() => {
   }
 
   return { create, init, get, getCatchScore, getLevel, getScreenPos, getThrownRocks,
-           getThrowAnim, update, checkRockCollision };
+           getThrowAnim, update, checkRockCollision, clearRocks };
 })();

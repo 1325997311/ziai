@@ -106,7 +106,8 @@ const GameCore = (() => {
           currentTier++;
           speed = SPEED_TIERS[currentTier];
           speedUpBuffer = BUFFER_FRAMES;
-          Obstacles.clearNear(90, 600); // 清空所有障碍物
+          Obstacles.clearNear(90, 9999); // 清空所有障碍物
+          Thief.clearRocks();           // 清空小偷石头
         }
       } else if (speedUpBuffer > 0) {
         // 缓冲期（无障碍物）
@@ -127,7 +128,7 @@ const GameCore = (() => {
     if (GameInput.consumePause()) { state = 'paused'; return; }
 
     player.update(speed / 2.5); // scale physics with speed
-    Thief.update(speed, worldOffset, score, fm);
+    Thief.update(speed, worldOffset, score, fm, speedUpBuffer > 0);
     // 缓冲期不生成障碍物
     if (speedUpWarning === 0 && speedUpBuffer === 0) {
       Obstacles.update(speed, fm, score);

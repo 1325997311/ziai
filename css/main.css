@@ -1,217 +1,346 @@
-/* ====== 字弈 — Mobile-First Portrait ====== */
+/* ====== 字弈 — Win98 像素风 ====== */
 
 :root {
-  --bg: #1a1a2e;
-  --bg-card: #16213e;
-  --bg-input: #0d1b36;
-  --fg: #e8e8e8;
-  --fg-dim: #7a8ba6;
-  --accent: #e94560;
-  --accent2: #ff6b81;
-  --gold: #ffd700;
-  --green: #2ecc71;
-  --border: #253552;
-  --radius: 10px;
+  --desktop: #008080;
+  --win-bg: #c0c0c0;
+  --win-white: #fff;
+  --win-dark: #808080;
+  --win-darker: #404040;
+  --win-black: #000;
+  --titlebar: #000080;
+  --titlebar-text: #fff;
+  --titlebar-inactive: #808080;
+  --accent: #000080;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ====== Base ====== */
 [v-cloak] { display: none; }
 
-#loading {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  font-size: 18px; color: var(--fg-dim); z-index: 999;
-  pointer-events: none;
-}
-
 body {
-  background: var(--bg);
-  color: var(--fg);
-  font-size: 15px;
+  background: var(--desktop);
+  color: #000;
+  font-family: 'Press Start 2P', 'Microsoft Sans Serif', monospace;
+  font-size: 11px;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
   user-select: none;
+  image-rendering: pixelated;
 }
 
 input, textarea, select {
-  color: var(--fg);
-  font-size: 15px;
+  color: #000;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
 }
 
-/* ====== Buttons ====== */
+/* ====== Win98 Window Base ====== */
+.win98-window {
+  background: var(--win-bg);
+  border: 2px solid;
+  border-color: #fff #000 #000 #fff;
+  box-shadow: inset -1px -1px 0 var(--win-dark), inset 1px 1px 0 #dfdfdf;
+}
+
+.win98-titlebar {
+  background: var(--titlebar);
+  color: var(--titlebar-text);
+  padding: 4px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex; align-items: center; justify-content: space-between;
+  letter-spacing: 0.5px;
+}
+
+/* ====== Win98 Button ====== */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px; font-weight: 600;
-  background: var(--bg-card);
-  color: var(--fg);
-  border: 1px solid var(--border);
-  transition: 0.15s;
+  padding: 6px 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  background: var(--win-bg);
+  color: #000;
+  border: 2px solid;
+  border-color: #fff #000 #000 #fff;
+  box-shadow: inset -1px -1px 0 var(--win-dark), inset 1px 1px 0 #dfdfdf;
+  cursor: pointer;
+  transition: none;
   white-space: nowrap;
+  text-transform: uppercase;
 }
-.btn:active { transform: scale(0.96); opacity: 0.85; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn.primary:active { background: var(--accent2); }
-.btn.sm { padding: 6px 12px; font-size: 13px; }
-.btn.danger { border-color: #c0392b; color: #e74c3c; background: transparent; }
-.btn.danger:active { background: #c0392b; color: #fff; }
-.game-btn { border-color: var(--gold); color: var(--gold); font-size: 13px; padding: 6px 14px; }
-.game-btn:active { background: var(--gold); color: #1a1a2e; }
+.btn:active {
+  border-color: #000 #fff #fff #000;
+  box-shadow: inset 1px 1px 0 #000;
+  transform: none; opacity: 1;
+}
+.btn:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -4px;
+}
+.btn.primary {
+  background: var(--win-bg);
+  font-weight: bold;
+}
+.btn.sm { padding: 4px 8px; font-size: 8px; }
+.btn.danger { color: #c00; }
+.game-btn { font-weight: bold; }
 
-/* ====== View: Main ====== */
+/* ====== Desktop (Main View) ====== */
 .view-main {
   max-width: 480px; margin: 0 auto;
-  padding-bottom: calc(64px + var(--safe-bottom));
+  min-height: 100vh;
+  padding-bottom: calc(48px + var(--safe-bottom));
 }
 
+/* Topbar = Win98 Window Title */
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px;
+  background: var(--titlebar);
+  color: #fff;
+  padding: 5px 8px;
+  margin: 0;
   position: sticky; top: 0; z-index: 50;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  border: 2px solid;
+  border-color: #fff #000 #000 #fff;
 }
-.brand { font-size: 20px; font-weight: 700; }
+.brand {
+  display: flex; align-items: center; gap: 6px;
+  font-weight: bold;
+}
+.brand .logo { font-size: 16px; }
 
+.topbar .btn {
+  background: var(--win-bg);
+  color: #000;
+  padding: 3px 8px;
+  font-size: 8px;
+  border-color: #fff #000 #000 #fff;
+}
+
+/* Stats Bar */
 .stats-bar {
-  padding: 10px 16px;
-  font-size: 13px; color: var(--fg-dim);
+  padding: 6px 0;
+  font-size: 8px;
+  color: #fff;
   display: flex; align-items: center; gap: 6px;
   flex-wrap: wrap;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.5);
 }
-.stats-bar .sep { color: var(--border); }
-.next-unlock { color: var(--gold); font-weight: 600; }
+.sep { color: rgba(255,255,255,.5); }
+.next-unlock { color: #ff0; }
 
-/* Notes */
-.note-list { padding: 8px 12px; }
+/* Note Grid = Desktop Icons */
+.note-list {
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 4px;
+}
 
 .note-card {
-  margin-bottom: 10px;
-  border-radius: var(--radius);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  transition: 0.15s;
+  text-align: center;
+  padding: 6px 4px 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.7);
+  position: relative;
 }
-.note-card:active { border-color: var(--accent); transform: scale(0.985); }
+.note-card:hover, .note-card:active {
+  background: rgba(0,0,128,.3);
+  border: 1px dotted rgba(255,255,255,.5);
+  transform: none;
+  box-shadow: none;
+}
 .note-card-inner {
-  padding: 16px;
-  background: var(--bg-card);
+  background: none;
+  padding: 0;
 }
+
+/* Win98 Desktop Icon */
+.note-icon {
+  width: 40px; height: 36px;
+  margin: 0 auto 4px;
+  position: relative;
+  image-rendering: pixelated;
+}
+/* Notepad body */
+.note-icon-body {
+  width: 32px; height: 28px;
+  background: #fff;
+  border: 2px solid #000;
+  position: absolute;
+  bottom: 0; left: 4px;
+  box-shadow: -2px 2px 0 rgba(0,0,0,.3);
+}
+/* Notepad lines */
+.note-icon-body::before {
+  content: '';
+  position: absolute; top: 8px; left: 4px; right: 4px;
+  height: 1px; background: #00f;
+  box-shadow: 0 4px 0 #00f, 0 8px 0 #00f, 0 12px 0 #00f;
+}
+/* Notepad top fold */
+.note-icon-fold {
+  width: 0; height: 0;
+  border-left: 8px solid #e0e0e0;
+  border-bottom: 8px solid #c0c0c0;
+  position: absolute;
+  top: 2px; right: 4px;
+  z-index: 1;
+}
+/* Shortcut arrow */
+.note-icon-arrow {
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 14px; height: 14px;
+  background: #000;
+  clip-path: polygon(0 100%, 40% 60%, 60% 80%, 80% 30%, 100% 10%, 100% 100%);
+  -webkit-clip-path: polygon(0 100%, 40% 60%, 60% 80%, 80% 30%, 100% 10%, 100% 100%);
+}
+
 .note-card-title {
-  font-size: 17px; font-weight: 700;
-  margin-bottom: 6px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.note-card-preview {
-  font-size: 14px; color: var(--fg-dim);
-  line-height: 1.6;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-size: 10px; font-weight: bold;
+  font-family: 'Microsoft Sans Serif', 'SimHei', system-ui, sans-serif;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.2;
+  max-height: 2.4em;
   overflow: hidden;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.5);
 }
 .note-card-meta {
-  display: flex; align-items: center; gap: 8px;
-  margin-top: 10px; font-size: 12px;
+  display: flex; justify-content: center; gap: 3px;
+  margin-top: 2px; font-size: 7px;
+  flex-wrap: wrap;
 }
 .badge {
-  padding: 2px 8px; border-radius: 4px;
-  font-size: 11px; font-weight: 600;
-  background: var(--bg); color: var(--fg-dim);
+  padding: 1px 4px; border-radius: 0;
+  font-size: 7px;
+  background: var(--win-bg);
+  color: #000;
+  border: 1px solid #808080;
 }
-.font-badge { color: var(--accent); }
-.time { color: var(--fg-dim); margin-left: auto; }
+.time { display: none; }
 
-/* Empty */
+/* Empty State */
 .empty-state {
-  text-align: center; padding: 60px 20px;
+  grid-column: 1 / -1;
+  text-align: center; padding: 60px 10px;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.5);
 }
-.empty-icon { font-size: 56px; margin-bottom: 12px; }
-.empty-state p { font-size: 17px; margin-bottom: 4px; }
-.empty-hint { color: var(--fg-dim); font-size: 14px !important; margin-bottom: 20px !important; }
+.empty-icon { font-size: 48px; margin-bottom: 10px; }
+.empty-state p { font-size: 11px; margin-bottom: 4px; }
+.empty-hint { font-size: 9px !important; margin-bottom: 16px !important; opacity: .7; }
 
-/* Bottombar */
+/* Bottom Bar = Taskbar */
 .bottombar {
   position: fixed; bottom: 0; left: 0; right: 0;
-  padding: 10px 16px calc(10px + var(--safe-bottom));
-  background: var(--bg);
-  border-top: 1px solid var(--border);
-  display: flex; gap: 8px;
+  padding: 4px 8px calc(4px + var(--safe-bottom));
+  background: var(--win-bg);
+  border-top: 2px solid #fff;
+  box-shadow: inset 0 1px 0 #dfdfdf;
+  display: flex; gap: 6px;
   z-index: 50;
   max-width: 480px; margin: 0 auto;
 }
-.bottombar .btn:first-child { flex: 1; }
+.bottombar .btn {
+  font-size: 8px; padding: 4px 10px;
+}
+.bottombar .btn:first-child {
+  font-weight: bold;
+}
 
-/* ====== View: Editor ====== */
+/* ====== Editor View = Win98 Window ====== */
 .view-editor {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: var(--bg);
+  background: var(--desktop);
   z-index: 100;
   display: flex; flex-direction: column;
-  padding-bottom: calc(12px + var(--safe-bottom));
+  padding: 4px;
+  padding-bottom: calc(4px + var(--safe-bottom));
 }
 
 .editor-topbar {
+  background: var(--titlebar);
+  color: #fff;
+  padding: 4px 6px;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 12px;
-  border-bottom: 1px solid var(--border);
-  gap: 8px;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: bold;
+  border: 2px solid;
+  border-color: #fff #000 #000 #fff;
 }
-.editor-title { font-weight: 700; font-size: 16px; }
+.editor-topbar .btn {
+  background: var(--win-bg);
+  color: #000;
+  font-size: 8px;
+  padding: 3px 8px;
+}
 
 .input-title {
-  margin: 12px 12px 8px;
-  padding: 12px 14px;
-  font-size: 20px; font-weight: 700;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  margin: 4px 0;
+  padding: 4px 6px;
+  font-size: 11px; font-weight: bold;
+  background: #fff;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  box-shadow: inset 1px 1px 0 #000;
 }
-.input-title::placeholder { color: var(--fg-dim); }
 
 .editor-tools {
-  display: flex; gap: 8px;
-  padding: 0 12px 8px;
+  display: flex; gap: 6px;
+  padding: 4px 0;
 }
 .sel {
   flex: 1;
-  padding: 8px 10px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 3px 4px;
+  background: #fff;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  font-size: 9px;
 }
 
 .input-content {
   flex: 1;
-  margin: 0 12px;
-  padding: 14px;
-  font-size: 16px; line-height: 1.8;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  margin: 4px 0;
+  padding: 6px;
+  font-size: 10px; line-height: 1.6;
+  background: #fff;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  box-shadow: inset 1px 1px 0 #000;
   resize: none;
+  font-family: 'Press Start 2P', monospace;
 }
-.input-content::placeholder { color: var(--fg-dim); }
 
 .preview-box {
-  margin: 10px 12px 0;
-  padding: 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  min-height: 60px;
-  max-height: 25vh;
+  margin: 4px 0;
+  padding: 6px;
+  background: #fff;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  box-shadow: inset 1px 1px 0 #000;
+  min-height: 40px;
+  max-height: 20vh;
   overflow-y: auto;
 }
-.preview-label { font-size: 11px; color: var(--fg-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-.preview-text { font-size: 16px; line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+.preview-label {
+  font-size: 8px; color: #808080; margin-bottom: 4px;
+  text-transform: uppercase;
+  font-family: 'Press Start 2P', monospace;
+}
+.preview-text { font-size: 10px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
 
-/* ====== View: Game ====== */
+/* ====== Game View ====== */
 .view-game {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: #fff;
+  background: var(--desktop);
   z-index: 150;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
@@ -220,89 +349,103 @@ input, textarea, select {
   display: block;
   width: 100vw;
   height: auto;
-  max-height: calc(100vh - 70px);
-  image-rendering: auto;
+  max-height: calc(100vh - 64px);
+  image-rendering: pixelated;
   touch-action: manipulation;
 }
 .game-touch-bar {
-  display: flex; gap: 20px;
-  padding: 8px 0 calc(8px + var(--safe-bottom));
+  display: flex; gap: 8px;
+  padding: 6px 0 calc(6px + var(--safe-bottom));
   justify-content: center;
+  background: var(--win-bg);
+  border-top: 2px solid #fff;
+  box-shadow: inset 0 1px 0 #dfdfdf;
 }
 .touch-btn {
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  font-size: 24px;
-  background: #fff;
-  border: 2px solid #000;
+  width: 46px; height: 46px;
+  border-radius: 0;
+  font-size: 18px;
+  background: var(--win-bg);
+  border: 2px solid;
+  border-color: #fff #000 #000 #fff;
+  box-shadow: inset -1px -1px 0 var(--win-dark), inset 1px 1px 0 #dfdfdf;
   color: #000;
   display: flex; align-items: center; justify-content: center;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: 0.1s;
 }
-.touch-btn:active { background: #000; color: #fff; transform: scale(0.9); }
-.dash-btn { border-width: 3px; }
+.touch-btn:active {
+  border-color: #000 #fff #fff #000;
+  box-shadow: inset 1px 1px 0 #000;
+  transform: none;
+}
 .game-quit-btn {
-  position: absolute; top: 12px; right: 12px;
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  font-size: 18px;
-  background: #fff;
-  border: 2px solid #000;
+  position: absolute; top: 6px; right: 6px;
+  width: 26px; height: 26px;
+  font-size: 14px;
+  background: var(--win-bg);
+  border: 2px solid;
+  border-color: #fff #000 #000 #fff;
   color: #000;
   z-index: 160;
   display: flex; align-items: center; justify-content: center;
+  font-family: 'Press Start 2P', monospace;
+}
+.game-quit-btn:active {
+  border-color: #000 #fff #fff #000;
 }
 
-/* ====== Overlay & Dialog ====== */
+/* ====== Dialog ====== */
 .overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,.7);
+  background: rgba(0,0,0,.5);
   z-index: 200;
   display: flex; align-items: center; justify-content: center;
 }
-.dialog {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 28px 24px;
-  text-align: center;
-  width: 85vw; max-width: 360px;
-}
-.dialog-icon { font-size: 48px; margin-bottom: 8px; }
-.dialog h3 { font-size: 18px; margin-bottom: 6px; }
-.dialog p { font-size: 14px; color: var(--fg-dim); margin-bottom: 16px; line-height: 1.5; }
-.dialog-actions { display: flex; gap: 10px; justify-content: center; }
 
-.score-big { font-size: 32px; font-weight: 700; color: var(--gold); margin: 8px 0 16px; }
+.dialog {
+  background: var(--win-bg);
+  border: 2px solid;
+  border-color: #fff #000 #000 #fff;
+  box-shadow: inset -1px -1px 0 var(--win-dark), inset 1px 1px 0 #dfdfdf;
+  padding: 20px 16px;
+  text-align: center;
+  width: 85vw; max-width: 320px;
+}
+.dialog-icon { font-size: 40px; margin-bottom: 6px; }
+.dialog h3 {
+  font-size: 10px; margin-bottom: 6px;
+  background: var(--titlebar);
+  color: #fff;
+  padding: 4px 6px;
+  margin: -20px -16px 10px -16px;
+}
+.dialog p { font-size: 10px; font-weight: bold; color: #000; margin-bottom: 12px; line-height: 1.6; font-family: 'Microsoft Sans Serif', system-ui, sans-serif; }
+.dialog-actions { display: flex; gap: 8px; justify-content: center; }
+
+.score-big {
+  font-size: 16px; font-weight: bold; color: #000;
+  margin: 8px 0 14px;
+  text-shadow: none;
+}
 
 /* ====== Toast ====== */
 .toast {
-  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
   z-index: 300;
-  background: var(--bg-card);
-  border: 1px solid var(--gold);
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-weight: 600; font-size: 15px;
-  display: flex; align-items: center; gap: 8px;
-  box-shadow: 0 4px 20px rgba(255,215,0,.25);
-  white-space: nowrap;
+  background: #ffffcc;
+  border: 2px solid;
+  border-color: #fff #000 #000 #fff;
+  padding: 8px 14px;
+  font-size: 9px;
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Press Start 2P', monospace;
 }
 
-/* ====== Transitions ====== */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.25s; }
+/* Transitions */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.15s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
-
-.toast-fade-enter-active { animation: toastIn 0.35s ease; }
-.toast-fade-leave-active { animation: toastOut 0.3s ease forwards; }
-@keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(-16px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
-@keyframes toastOut { from { opacity:1; } to { opacity:0; transform:translateX(-50%) translateY(-16px); } }
-
-/* ====== Desktop tweaks ====== */
-@media (min-width: 768px) {
-  .view-main, .bottombar { max-width: 480px; }
-  .note-list { padding: 12px 16px; }
-  .dialog { max-width: 400px; }
-}
+.toast-fade-enter-active { animation: toastIn 0.2s ease; }
+.toast-fade-leave-active { animation: toastOut 0.15s ease forwards; }
+@keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(-8px); } }
+@keyframes toastOut { to { opacity:0; } }
