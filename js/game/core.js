@@ -115,6 +115,9 @@ const GameCore = (() => {
     const proximitySpeed = Math.max(0, (200 - dist) / 200) * 6;
     speed = timeSpeed + proximitySpeed;
 
+    // Boost multiplier (must be before speed calc)
+    const boostMult = PowerUps.isBoostActive() ? 1.5 : 1;
+
     // Advance world (with boost)
     const effectiveSpeed = speed * boostMult;
     worldOffset += effectiveSpeed * fm;
@@ -184,9 +187,6 @@ const GameCore = (() => {
         score += 50;
       }
     }
-
-    // Boost: extra speed
-    const boostMult = PowerUps.isBoostActive() ? 1.5 : 1;
 
     if (player.dashTimer > 0) Obstacles.breakNear(PLAYER_X, player.w);
 
