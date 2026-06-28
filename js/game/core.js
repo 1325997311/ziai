@@ -1,8 +1,14 @@
 /**
- * 游戏核心 — 竖屏跑酷追小偷
+ * 游戏核心 — 主循环 + 状态管理 + 碰撞
  */
 const GameCore = (() => {
-  const { W, H, GROUND_Y } = Renderer;
+  const {
+    CANVAS_W: W, CANVAS_H: H, GROUND_Y,
+    BASE_SPEED, PLAYER_X,
+    SPEED_TIERS, SPEED_TIER_SCORES,
+    SPEED_WARNING_FRAMES, SPEED_BUFFER_FRAMES, SPEED_WARNING_AHEAD,
+    SCORE_PER_FRAME, SCORE_WIN_BONUS, INVINCIBLE_AFTER_HIT,
+  } = CONFIG;
 
   let canvas, ctx;
   let state, player, particles;
@@ -13,16 +19,11 @@ const GameCore = (() => {
   let flashAlpha = 0;
   let lastError = '';
   let worldOffset = 0;
-  let catchScore = 5000;
+  let catchScore = CONFIG.THIEF_CATCH_SCORES[1];
 
-  // 加速系统
-  const SPEED_TIERS = [2.5, 3.5, 5, 6.5, 8, 10, 12];
-  const TIER_SCORES  = [0, 30000, 70000, 120000, 180000, 260000, 360000];
   let currentTier = 0;
-  let speedUpWarning = 0;   // >0: showing warning
-  let speedUpBuffer  = 0;   // >0: no-obstacle buffer after speed-up
-  const WARNING_FRAMES = 120; // 2s warning
-  const BUFFER_FRAMES  = 180; // 3s buffer
+  let speedUpWarning = 0;
+  let speedUpBuffer = 0;
 
   function init(canvasEl, opts) {
     if (animId) cancelAnimationFrame(animId);
@@ -30,30 +31,30 @@ const GameCore = (() => {
     ctx = canvas.getContext('2d');
     canvas.width = W;
     canvas.height = H;
-    abilities = opts.abilities || ['jump'];
+    abilities   = opts.abilities || ['jump'];
     stolenNotes = opts.stolenNotes || [{ title: '空白笔记' }];
-    catchScore = opts.catchScore || 25000;
-    onWin = opts.onWin;
-    onLose = opts.onLose;
-    onLifeLost = opts.onLifeLost;
+    catchScore  = opts.catchScore || CONFIG.THIEF_CATCH_SCORES[1];
+    onWin       = opts.onWin;
+    onLose       = opts.onLose;
+    onLifeLost   = opts.onLifeLost;
 
     GameInput.attach();
     Obstacles.create();
     Thief.create();
     Thief.init({ thiefLevel: opts.thiefLevel || 1, catchScore });
 
-    state = 'ready';
-    player = new Player.PlayerState(abilities);
-    particles = [];
-    speed = SPEED_TIERS[0];
-    score = 0;
-    lives = abilities.includes('extraLife') ? 2 : 1;
-    flashAlpha = 0;
-    lastError = '';
-    worldOffset = 0;
-    currentTier = 0;
+    state        = 'ready';
+    player       = new Player.PlayerState(abilities);
+    particles    = [];
+    speed        = SPEED_TIERS[0];
+    score        = 0;
+    lives        = abilities.includes('extraLife') ? 2 : 1;
+    flashAlpha   = 0;
+    lastError    = '';
+    worldOffset  = 0;
+    currentTier  = 0;
     speedUpWarning = 0;
-    speedUpBuffer = 0;
+    speedUpBuffer  = 0;
 
     drawFrame(0);
   }
@@ -70,16 +71,14 @@ const GameCore = (() => {
     if (state !== 'playing') { animId = null; return; }
     const dt = Math.min(ts - lastTime, 33);
     lastTime = ts;
-
     try { update(dt); } catch (e) {
-      console.error('[Game] Update error:', e.message);
-      lastError = e.message || 'unknown';
+      console.error('[Game]', e.message);
+      lastError = e.message || '';
       state = 'paused';
       drawFrame(ts);
       animId = null;
       return;
     }
-
     drawFrame(ts);
     if (state === 'playing') animId = requestAnimationFrame(loop);
     else animId = null;
@@ -87,38 +86,38 @@ const GameCore = (() => {
 
   function update(dt) {
     const fm = dt / 16.67;
-
     const thiefObj = Thief.get();
     if (!thiefObj || !player) return;
 
-    const playerWorldX = worldOffset + 90;
+    const playerWorldX = worldOffset + PLAYER_X;
     const thiefWorldX = thiefObj.x;
     const dist = thiefWorldX - playerWorldX;
 
-    // ---- 加速阶梯系统 ----
+    // ---- Speed tiers ----
     if (currentTier < SPEED_TIERS.length - 1) {
-      const nextScore = TIER_SCORES[currentTier + 1];
+      const nextScore = SPEED_TIER_SCORES[currentTier + 1];
       if (speedUpWarning > 0) {
-        // 正在警告中
         speedUpWarning--;
         if (speedUpWarning === 0) {
-          // 加速！
           currentTier++;
           speed = SPEED_TIERS[currentTier];
-          speedUpBuffer = BUFFER_FRAMES;
-          Obstacles.clearNear(90, 9999); // 清空所有障碍物
-          Thief.clearRocks();           // 清空小偷石头
+          speedUpBuffer = SPEED_BUFFER_FRAMES;
+          Obstacles.clearNear(PLAYER_X, 9999);
+          Thief.clearRocks();
         }
       } else if (speedUpBuffer > 0) {
-        // 缓冲期（无障碍物）
         speedUpBuffer--;
-      } else if (score >= nextScore - 200) {
-        // 接近下一档 → 开始警告
-        speedUpWarning = WARNING_FRAMES;
+      } else if (score >= nextScore - SPEED_WARNING_AHEAD) {
+        speedUpWarning = SPEED_WARNING_FRAMES;
       }
     }
 
-    // World scroll
+    // Time-based speed (gradual ramp within tier)
+    const timeSpeed = SPEED_TIERS[currentTier];
+    const proximitySpeed = Math.max(0, (200 - dist) / 200) * 6;
+    speed = timeSpeed + proximitySpeed;
+
+    // Advance world
     worldOffset += speed * fm;
 
     // Input
@@ -127,33 +126,27 @@ const GameCore = (() => {
     if (GameInput.consumeDash()) player.dash();
     if (GameInput.consumePause()) { state = 'paused'; return; }
 
-    player.update(speed / 2.5); // scale physics with speed
+    // Update entities
+    player.update(speed / BASE_SPEED);
     Thief.update(speed, worldOffset, score, fm, speedUpBuffer > 0);
-    // 缓冲期不生成障碍物
     if (speedUpWarning === 0 && speedUpBuffer === 0) {
       Obstacles.update(speed, fm, score);
     } else {
-      // 只移动现有障碍物，不生成新的
       Obstacles.updateMoveOnly(speed, fm);
     }
 
     // Collisions
     if (!player.invincible && player.dashTimer === 0) {
-      const ph = { x: 90, y: player.y, w: player.w, h: player.h };
       let hit = false;
-
-      // Ground obstacles
+      const ph = { x: PLAYER_X, y: player.y, w: player.w, h: player.h };
       for (const obs of Obstacles.all()) {
-        if (!obs || obs.x + obs.w < 90 || obs.x > 90 + player.w) continue;
+        if (!obs || obs.x + obs.w < PLAYER_X || obs.x > PLAYER_X + player.w) continue;
         if (ph.x < obs.x + obs.w && ph.x + ph.w > obs.x &&
             ph.y < obs.y + obs.h && ph.y + ph.h > obs.y) { hit = true; break; }
       }
-
-      // Thief-thrown rocks
-      if (!hit && Thief.checkRockCollision(90, player.w, player.y, player.h)) {
+      if (!hit && Thief.checkRockCollision(PLAYER_X, player.w, player.y, player.h)) {
         hit = true;
       }
-
       if (hit && player.die()) {
         lives--;
         if (lives <= 0) {
@@ -165,19 +158,19 @@ const GameCore = (() => {
           flashAlpha = 0.6;
           player.reset(abilities);
           player.invincible = true;
-          player.invincibleTimer = 120;
-          Obstacles.clearNear(90, 200);
+          player.invincibleTimer = INVINCIBLE_AFTER_HIT;
+          Obstacles.clearNear(PLAYER_X, 200);
         }
       }
     }
 
-    if (player.dashTimer > 0) Obstacles.breakNear(90, player.w);
+    if (player.dashTimer > 0) Obstacles.breakNear(PLAYER_X, player.w);
 
-    score += Math.floor(10 * fm);
+    score += Math.floor(SCORE_PER_FRAME * fm);
 
     if (score >= catchScore && playerWorldX >= thiefWorldX - 25) {
       state = 'won';
-      score += 500;
+      score += SCORE_WIN_BONUS;
       if (stolenNotes.length > 0) score += stolenNotes.reduce((s,n) => s + (n.content||'').length, 0);
       if (onWin) onWin({ score, stolenNotes });
       return;
@@ -199,60 +192,36 @@ const GameCore = (() => {
 
     try { Renderer.drawSky(ctx, scrollX); } catch(e) {}
     try { Renderer.drawGround(ctx, scrollX); } catch(e) {}
-
     try { for (const o of Obstacles.all()) Renderer.drawObstacle(ctx, o); } catch(e) {}
-    // Thrown rocks (ground obstacles from thief)
-    try {
-      for (const r of Thief.getThrownRocks()) {
-        Renderer.drawObstacle(ctx, { type: 'rock', x: r.x, y: r.y, w: r.w, h: r.h });
-      }
-    } catch(e) {}
-
+    // Thrown rocks
+    try { for (const r of Thief.getThrownRocks()) Renderer.drawObstacle(ctx, { type:'rock', x:r.x, y:r.y, w:r.w, h:r.h }); } catch(e) {}
+    // Thief
     try {
       const t = Thief.getScreenPos(worldOffset);
-      if (t && t.x !== undefined) {
+      if (t) {
         Renderer.drawThief(ctx, t);
-        // Throw animation: rock above thief's head
         const ta = Thief.getThrowAnim();
-        if (ta > 0) {
-          const bob = Math.sin(t.frame*0.8)*2;
-          ctx.fillStyle = '#fff';
-          ctx.fillRect(t.x + 25, t.y + bob - 20, 14, 14);
-          ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
-          ctx.strokeRect(t.x + 25, t.y + bob - 20, 14, 14);
-          ctx.fillStyle = '#000';
-          ctx.fillRect(t.x + 29, t.y + bob - 17, 4, 3);
-          // Arm
-          ctx.fillStyle = '#000';
-          ctx.fillRect(t.x + 20, t.y + bob - 6, 7, 6);
-        }
-        if (score < catchScore) {
-          ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
-          ctx.setLineDash([4, 4]);
-          ctx.strokeRect(t.x - 4, t.y - 4, t.w + 8, t.h + 8);
-          ctx.setLineDash([]);
-        }
+        if (ta > 0) { drawThrowAnim(ctx, t, ta); }
+        if (score < catchScore) { drawShield(ctx, t); }
       }
-    } catch(e) { console.warn('drawThief error:', e); }
-
-    try { if (player) Renderer.drawPlayer(ctx, { ...player, x: 90 }); } catch(e) {}
+    } catch(e) {}
+    // Player
+    try { if (player) Renderer.drawPlayer(ctx, { ...player, x: PLAYER_X }); } catch(e) {}
     try { Renderer.drawSpeedLines(ctx, speed); } catch(e) {}
-
+    // HUD
     try {
-      const t = Thief.get();
       GameUI.draw(ctx, {
         state, score, lives,
-        player: { x: worldOffset + 90, y: player?.y || 0 },
-        thief: t || { x: worldOffset + 600 },
+        player: { x: worldOffset + PLAYER_X, y: player?.y || 0 },
+        thief: Thief.get() || {},
         speed, abilities: abilities || [],
-        stolenNotes: stolenNotes || [],
-        speedUpWarning, speedUpBuffer,
-        currentTier, speedTiers: SPEED_TIERS, tierScores: TIER_SCORES,
+        stolenNotes, speedUpWarning, speedUpBuffer,
+        currentTier, speedTiers: SPEED_TIERS, tierScores: SPEED_TIER_SCORES,
+        catchScore, thiefLevel: Thief.getLevel(),
       });
     } catch(e) {}
 
     if (state === 'paused') GameUI.drawPause(ctx, lastError);
-
     if (flashAlpha > 0) {
       ctx.fillStyle = `rgba(255,0,0,${flashAlpha})`;
       ctx.fillRect(0, 0, W, H);
@@ -261,16 +230,33 @@ const GameCore = (() => {
     }
   }
 
+  function drawThrowAnim(ctx, t, ta) {
+    const bob = Math.sin(t.frame*0.8)*2;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(t.x + 25, t.y + bob - 20, 14, 14);
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+    ctx.strokeRect(t.x + 25, t.y + bob - 20, 14, 14);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(t.x + 29, t.y + bob - 17, 4, 3);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(t.x + 20, t.y + bob - 6, 7, 6);
+  }
+
+  function drawShield(ctx, t) {
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(t.x - 4, t.y - 4, t.w + 8, t.h + 8);
+    ctx.setLineDash([]);
+  }
+
   function resume() {
     if (state !== 'paused') return;
     state = 'playing'; lastTime = performance.now(); lastError = '';
     loop(lastTime);
   }
-
-  function pause() { if (state === 'playing') state = 'paused'; }
+  function pause()    { if (state === 'playing') state = 'paused'; }
   function getState() { return state; }
-
-  function destroy() {
+  function destroy()  {
     if (animId) { cancelAnimationFrame(animId); animId = null; }
     GameInput.detach(); GameInput.reset();
   }

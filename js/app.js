@@ -44,7 +44,7 @@ const app = createApp({
     let _canvasTap = null; // tracked canvas tap handler
     let _lastGameStolen = null; // save for "再来一局"
     let _lastGameLevel = 1;
-    let _lastGameCatch = 25000;
+    let _lastGameCatch = CONFIG.THIEF_CATCH_SCORES[1];
 
     // ---- 计算属性 ----
     const noteCount = computed(() => notes.value.length);
@@ -244,7 +244,7 @@ const app = createApp({
         return;
       }
       // Steal ceil(notes/5) notes
-      const stealCount = Math.ceil(notes.value.length / 5);
+      const stealCount = Math.ceil(notes.value.length / CONFIG.THIEF_NOTES_STEAL_DIVISOR);
       const allNotes = [...notes.value];
       const stolenNotes = [];
       for (let i = 0; i < stealCount; i++) {
@@ -255,7 +255,7 @@ const app = createApp({
       const thiefLevels = ['', '🥷 小偷 Lv.2', '🥷 小偷 Lv.3', '🥷 小偷 Lv.4', '🥷 小偷 Lv.5+'];
       const levelName = thiefLevels[Math.min(level - 1, 4)] || '🥷 小偷 Lv.1';
       const noteNames = stolenNotes.map(n => '《' + (n.title || '未命名') + '》').join('、');
-      const catchScores = [0, 25000, 40000, 60000, 90000, 125000];
+      const catchScores = CONFIG.THIEF_CATCH_SCORES;
       const catchScore = catchScores[Math.min(level, 5)];
 
       dialog.value = {

@@ -1,9 +1,8 @@
 /**
- * 障碍物系统 — 自包含状态
+ * 障碍物系统 — 环境障碍生成 + 间距控制
  */
 const Obstacles = (() => {
-  const { GROUND_Y } = Renderer;
-  const SPAWN_X = 500;
+  const { GROUND_Y, OBSTACLE_MIN_GAP, OBSTACLE_SPAWN_X, OBSTACLE_DENSITY_MAX } = CONFIG;
 
   const TYPES = [
     { type:'cactus_small', w:12, h:28, yOff:0,   weight:5 },
@@ -12,8 +11,6 @@ const Obstacles = (() => {
     { type:'bird',         w:24, h:12, yOff:-110,weight:2 },
     { type:'crack',        w:36, h:8,  yOff:0,   weight:1 },
   ];
-
-  const MIN_GAP = 130; // minimum pixels between obstacles
 
   let items = [];
   let spawnTimer = 0;
@@ -32,53 +29,37 @@ const Obstacles = (() => {
 
     spawnTimer -= speed * fm;
     if (spawnTimer <= 0) {
-      spawn();
-      // Density: sparse early, dense later (based on score)
-      const t = Math.min(1, (score || 0) / 50000); // 0→1 over 50000 score
-      const minGap = 160 - t * 90;  // 160 → 70
-      const maxGap = 280 - t * 150; // 280 → 130
+      spawnAtSafePosition(score);
+      const t = Math.min(1, (score || 0) / OBSTACLE_DENSITY_MAX);
+      const minGap = 160 - t * 90;
+      const maxGap = 280 - t * 150;
       spawnTimer = minGap + Math.random() * (maxGap - minGap);
     }
   }
 
-  function spawn() {
+  function spawnAtSafePosition(score) {
     const totalW = TYPES.reduce((s,t)=>s+t.weight,0);
     let r = Math.random() * totalW;
     let chosen = TYPES[0];
     for (const t of TYPES) { r -= t.weight; if (r <= 0) { chosen = t; break; } }
-    // Ensure minimum gap from last obstacle
-    let sx = SPAWN_X + Math.random() * 100;
-    if (lastSpawnX > 0 && sx - lastSpawnX < MIN_GAP) {
-      sx = lastSpawnX + MIN_GAP + Math.random() * 60;
+
+    let sx = OBSTACLE_SPAWN_X + Math.random() * 100;
+    if (lastSpawnX > 0 && sx - lastSpawnX < OBSTACLE_MIN_GAP) {
+      sx = lastSpawnX + OBSTACLE_MIN_GAP + Math.random() * 60;
     }
-    // Also check against thief-thrown rocks
-    for (const r of (typeof Thief !== 'undefined' && Thief.getThrownRocks ? Thief.getThrownRocks() : [])) {
-      if (Math.abs(sx - r.x) < MIN_GAP) {
-        sx = r.x + MIN_GAP + Math.random() * 60;
+    // Avoid thief-thrown rocks
+    if (typeof Thief !== 'undefined' && Thief.getThrownRocks) {
+      for (const rk of Thief.getThrownRocks()) {
+        if (Math.abs(sx - rk.x) < OBSTACLE_MIN_GAP) {
+          sx = rk.x + OBSTACLE_MIN_GAP + Math.random() * 60;
+        }
       }
     }
     lastSpawnX = sx;
     items.push({
       type: chosen.type,
-      x: sx,
-      y: GROUND_Y - chosen.h + chosen.yOff,
+      x: sx, y: GROUND_Y - chosen.h + chosen.yOff,
       w: chosen.w, h: chosen.h,
-    });
-  }
-
-  function all() { return items; }
-
-  function clearNear(x, range) {
-    items = items.filter(o => Math.abs(o.x - x) > range);
-  }
-
-  function breakNear(x, size) {
-    items = items.filter(o => {
-      if (o.x > x - 10 && o.x < x + size + 10 &&
-          (o.type === 'cactus_small' || o.type === 'cactus_large' || o.type === 'rock')) {
-        return false;
-      }
-      return true;
     });
   }
 
@@ -87,6 +68,10 @@ const Obstacles = (() => {
     for (const o of items) o.x -= speed * fm;
     items = items.filter(o => o.x > -60);
   }
+
+  function all()          { return items; }
+  function clearNear(x, r){ items = items.filter(o => Math.abs(o.x - x) > r); }
+  function breakNear(x, s){ items = items.filter(o => !(o.x > x-10 && o.x < x+s+10 && ['cactus_small','cactus_large'].includes(o.type))); }
 
   return { create, update, updateMoveOnly, all, clearNear, breakNear };
 })();
