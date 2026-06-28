@@ -15,8 +15,16 @@ const Obstacles = (() => {
   let items = [];
   let spawnTimer = 0;
   let lastSpawnX = -999;
+  // Object pool for obstacle reuse
+  const obsPool = Pool.create(
+    () => ({ type:'', x:0, y:0, w:0, h:0 }),
+    (o) => { o.type=''; o.x=-999; o.y=0; },
+    30
+  );
 
   function create() {
+    // Return all items to pool
+    obsPool.releaseAll(items);
     items = [];
     spawnTimer = 0;
     lastSpawnX = -999;
@@ -24,8 +32,14 @@ const Obstacles = (() => {
 
   function update(speed, frameMult, score) {
     const fm = frameMult || 1;
-    for (const o of items) o.x -= speed * fm;
-    items = items.filter(o => o.x > -60);
+    // Move + recycle off-screen
+    for (let i = items.length - 1; i >= 0; i--) {
+      items[i].x -= speed * fm;
+      if (items[i].x < -60) {
+        obsPool.release(items[i]);
+        items.splice(i, 1);
+      }
+    }
 
     spawnTimer -= speed * fm;
     if (spawnTimer <= 0) {
@@ -47,7 +61,6 @@ const Obstacles = (() => {
     if (lastSpawnX > 0 && sx - lastSpawnX < OBSTACLE_MIN_GAP) {
       sx = lastSpawnX + OBSTACLE_MIN_GAP + Math.random() * 60;
     }
-    // Avoid thief-thrown rocks
     if (typeof Thief !== 'undefined' && Thief.getThrownRocks) {
       for (const rk of Thief.getThrownRocks()) {
         if (Math.abs(sx - rk.x) < OBSTACLE_MIN_GAP) {
@@ -56,22 +69,43 @@ const Obstacles = (() => {
       }
     }
     lastSpawnX = sx;
-    items.push({
-      type: chosen.type,
-      x: sx, y: GROUND_Y - chosen.h + chosen.yOff,
-      w: chosen.w, h: chosen.h,
-    });
+    // Acquire from pool
+    const obj = obsPool.acquire();
+    obj.type = chosen.type;
+    obj.x = sx; obj.y = GROUND_Y - chosen.h + chosen.yOff;
+    obj.w = chosen.w; obj.h = chosen.h;
+    items.push(obj);
   }
 
   function updateMoveOnly(speed, frameMult) {
     const fm = frameMult || 1;
-    for (const o of items) o.x -= speed * fm;
-    items = items.filter(o => o.x > -60);
+    for (let i = items.length - 1; i >= 0; i--) {
+      items[i].x -= speed * fm;
+      if (items[i].x < -60) {
+        obsPool.release(items[i]);
+        items.splice(i, 1);
+      }
+    }
   }
 
   function all()          { return items; }
-  function clearNear(x, r){ items = items.filter(o => Math.abs(o.x - x) > r); }
-  function breakNear(x, s){ items = items.filter(o => !(o.x > x-10 && o.x < x+s+10 && ['cactus_small','cactus_large'].includes(o.type))); }
+  function clearNear(x, range) {
+    for (let i = items.length - 1; i >= 0; i--) {
+      if (Math.abs(items[i].x - x) <= range) {
+        obsPool.release(items[i]);
+        items.splice(i, 1);
+      }
+    }
+  }
+  function breakNear(x, s) {
+    for (let i = items.length - 1; i >= 0; i--) {
+      const o = items[i];
+      if (o.x > x-10 && o.x < x+s+10 && ['cactus_small','cactus_large'].includes(o.type)) {
+        obsPool.release(o);
+        items.splice(i, 1);
+      }
+    }
+  }
 
   return { create, update, updateMoveOnly, all, clearNear, breakNear };
 })();
