@@ -86,6 +86,8 @@ const Obstacles = (() => {
         items.splice(i, 1);
       }
     }
+    // Keep spawnTimer ticking so obstacles appear right after buffer
+    spawnTimer -= speed * fm;
   }
 
   function all()          { return items; }
