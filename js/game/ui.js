@@ -10,7 +10,7 @@ const GameUI = (() => {
             speedUpWarning, speedUpBuffer, currentTier, speedTiers, tierScores, speed, coins } = gs;
     const WW = 400;
 
-    if (state === 'ready' || state === 'countdown') {
+    if (state === 'ready') {
       // Win98 dialog
       ctx.fillStyle = GRAY;
       ctx.fillRect(20, 180, WW-40, 260);
@@ -28,33 +28,26 @@ const GameUI = (() => {
       ctx.textAlign = 'center';
       ctx.fillText('⚠ 小偷来袭', WW/2, 196);
       // Content
-      if (state === 'countdown') {
-        ctx.fillStyle = B;
-        ctx.font = 'bold 48px system-ui, sans-serif';
-        const cd = gs.countdown || 0;
-        ctx.fillText(cd > 0 ? cd : 'GO!', WW/2, 320);
-      } else {
-        ctx.fillStyle = B;
-        ctx.font = 'bold 11px system-ui, sans-serif';
-        const noteList = (stolenNotes || []).map(n => '《' + (n.title || '笔记') + '》').join(' ');
-        ctx.fillText('偷走: ' + noteList, WW/2, 245);
-        const catchSc = Thief.getCatchScore();
-        const lv = Thief.getLevel();
-        ctx.font = 'bold 12px system-ui, sans-serif';
-        ctx.fillText('Lv.' + lv + ' | 需 ' + catchSc + ' 分追上', WW/2, 270);
-        if (lv >= 2) { ctx.fillStyle = '#c00'; ctx.fillText('⚠ 小偷会丢石头！', WW/2, 295); }
-        // OK button
-        const bx = WW/2 - 40, by = 380;
-        ctx.fillStyle = GRAY;
-        ctx.fillRect(bx, by, 80, 28);
-        ctx.fillStyle = W;
-        ctx.fillRect(bx, by, 80, 2); ctx.fillRect(bx, by, 2, 28);
-        ctx.fillStyle = '#404040';
-        ctx.fillRect(bx, by+26, 80, 2); ctx.fillRect(bx+78, by, 2, 28);
-        ctx.fillStyle = B;
-        ctx.font = '10px "Press Start 2P", monospace';
-        ctx.fillText('点击开始', WW/2, by+20);
-      }
+      ctx.fillStyle = B;
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      const noteList = (stolenNotes || []).map(n => '《' + (n.title || '笔记') + '》').join(' ');
+      ctx.fillText('偷走: ' + noteList, WW/2, 245);
+      const catchSc = Thief.getCatchScore();
+      const lv = Thief.getLevel();
+      ctx.font = 'bold 12px system-ui, sans-serif';
+      ctx.fillText('Lv.' + lv + ' | 需 ' + catchSc + ' 分追上', WW/2, 270);
+      if (lv >= 2) { ctx.fillStyle = '#c00'; ctx.fillText('⚠ 小偷会丢石头！', WW/2, 295); }
+      // OK button
+      const bx = WW/2 - 40, by = 380;
+      ctx.fillStyle = GRAY;
+      ctx.fillRect(bx, by, 80, 28);
+      ctx.fillStyle = W;
+      ctx.fillRect(bx, by, 80, 2); ctx.fillRect(bx, by, 2, 28);
+      ctx.fillStyle = '#404040';
+      ctx.fillRect(bx, by+26, 80, 2); ctx.fillRect(bx+78, by, 2, 28);
+      ctx.fillStyle = B;
+      ctx.font = '10px "Press Start 2P", monospace';
+      ctx.fillText('点击开始', WW/2, by+20);
       ctx.textAlign = 'start';
       return;
     }
