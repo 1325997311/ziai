@@ -83,5 +83,5 @@ const PowerUps = (() => {
     ctx.textAlign = 'start';
   }
 
-  return { create, update, checkCollect, all, getActive, isShieldActive, consumeShield, isMagnetActive, isBoostActive, draw };
+  return { create, update, checkCollect, all, getActive, isShieldActive, consumeShield, isMagnetActive, isBoostActive, draw, activate };
 })();
