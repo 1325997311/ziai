@@ -33,10 +33,12 @@ const PowerUps = (() => {
     spawnCounter--;
     if (spawnCounter <= 0 && items.length < 2) {
       const type = TYPES[Math.floor(Math.random() * TYPES.length)];
+      // Spawn at jump apex height (player must jump to collect)
+      const jumpApex = GROUND_Y - CONFIG.PLAYER_H - 140;
       items.push({
         ...type,
         x: 500 + Math.random() * 100,
-        y: GROUND_Y - 55,
+        y: jumpApex + Math.random() * 20, // slight variation
         w: 18, h: 18,
       });
       spawnCounter = 600 + Math.random() * 400; // 10-17s
