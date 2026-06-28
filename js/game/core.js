@@ -37,6 +37,7 @@ const GameCore = (() => {
     GameInput.attach();
     Obstacles.create();
     Coins.create();
+    PowerUps.create();
     Thief.create();
     Thief.init({ thiefLevel: opts.thiefLevel || 1, catchScore });
 
@@ -128,8 +129,9 @@ const GameCore = (() => {
     const proximitySpeed = Math.max(0, (200 - dist) / 200) * 6;
     speed = timeSpeed + proximitySpeed;
 
-    // Advance world
-    worldOffset += speed * fm;
+    // Advance world (with boost)
+    const effectiveSpeed = speed * boostMult;
+    worldOffset += effectiveSpeed * fm;
 
     // Input
     if (GameInput.consumeJump()) player.jump();
@@ -140,6 +142,7 @@ const GameCore = (() => {
     // Update entities
     player.update(speed / BASE_SPEED);
     Coins.update(speed, fm);
+    PowerUps.update(speed, fm);
     Thief.update(speed, worldOffset, score, fm, speedUpBuffer > 0);
     if (speedUpWarning === 0 && speedUpBuffer === 0) {
       Obstacles.update(speed, fm, score);
@@ -159,6 +162,12 @@ const GameCore = (() => {
       if (!hit && Thief.checkRockCollision(PLAYER_X, player.w, player.y, player.h)) {
         hit = true;
       }
+      // Shield absorbs one hit
+      if (hit && PowerUps.isShieldActive()) {
+        PowerUps.consumeShield();
+        hit = false;
+        EventBus.emit('game:shieldBreak', {});
+      }
       if (hit && player.die()) {
         lives--;
         if (lives <= 0) {
@@ -176,10 +185,22 @@ const GameCore = (() => {
       }
     }
 
-    // Coin collection
+    // PowerUp collection
+    const pu = PowerUps.checkCollect(PLAYER_X, player.w, player.y, player.h);
+    if (pu) { EventBus.emit('game:powerup', pu); }
+
+    // Coin collection (+ magnet auto-collect)
     if (Coins.checkCollect(PLAYER_X, player.w, player.y, player.h)) {
       score += 50;
+    } else if (PowerUps.isMagnetActive()) {
+      // Magnet: check wider range
+      if (Coins.checkCollect(PLAYER_X - 60, player.w + 120, player.y - 40, player.h + 80)) {
+        score += 50;
+      }
     }
+
+    // Boost: extra speed
+    const boostMult = PowerUps.isBoostActive() ? 1.5 : 1;
 
     if (player.dashTimer > 0) Obstacles.breakNear(PLAYER_X, player.w);
 
@@ -210,8 +231,9 @@ const GameCore = (() => {
     try { Renderer.drawSky(ctx, scrollX); } catch(e) {}
     try { Renderer.drawGround(ctx, scrollX); } catch(e) {}
     try { for (const o of Obstacles.all()) Renderer.drawObstacle(ctx, o); } catch(e) {}
-    // Coins
+    // Coins + PowerUps
     try { for (const c of Coins.all()) Coins.draw(ctx, c); } catch(e) {}
+    try { for (const p of PowerUps.all()) PowerUps.draw(ctx, p); } catch(e) {}
     // Thrown rocks
     try { for (const r of Thief.getThrownRocks()) Renderer.drawObstacle(ctx, { type:'rock', x:r.x, y:r.y, w:r.w, h:r.h }); } catch(e) {}
     // Thief
