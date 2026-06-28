@@ -7,7 +7,7 @@ const GameUI = (() => {
 
   function draw(ctx, gs) {
     const { state, score, lives, player, thief, abilities, stolenNotes,
-            speedUpWarning, speedUpBuffer, currentTier, speedTiers, tierScores, speed } = gs;
+            speedUpWarning, speedUpBuffer, currentTier, speedTiers, tierScores, speed, coins } = gs;
     const WW = 400;
 
     if (state === 'ready' || state === 'countdown') {
@@ -99,11 +99,11 @@ const GameUI = (() => {
       ctx.fillText(Math.floor(dist/10)+'m', barX+barW+4, barY+10);
     }
 
-    // Score
+    // Coins + Score
     ctx.font = 'bold 12px system-ui, sans-serif';
     ctx.fillStyle = B;
     ctx.textAlign = 'right';
-    ctx.fillText('🏆 ' + score, WW - 8, 30);
+    ctx.fillText('💰' + (coins || 0) + ' 🏆' + score, WW - 8, 30);
     ctx.textAlign = 'left';
 
     // Abilities

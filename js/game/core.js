@@ -36,6 +36,7 @@ const GameCore = (() => {
 
     GameInput.attach();
     Obstacles.create();
+    Coins.create();
     Thief.create();
     Thief.init({ thiefLevel: opts.thiefLevel || 1, catchScore });
 
@@ -138,6 +139,7 @@ const GameCore = (() => {
 
     // Update entities
     player.update(speed / BASE_SPEED);
+    Coins.update(speed, fm);
     Thief.update(speed, worldOffset, score, fm, speedUpBuffer > 0);
     if (speedUpWarning === 0 && speedUpBuffer === 0) {
       Obstacles.update(speed, fm, score);
@@ -174,6 +176,11 @@ const GameCore = (() => {
       }
     }
 
+    // Coin collection
+    if (Coins.checkCollect(PLAYER_X, player.w, player.y, player.h)) {
+      score += 50;
+    }
+
     if (player.dashTimer > 0) Obstacles.breakNear(PLAYER_X, player.w);
 
     score += Math.floor(SCORE_PER_FRAME * fm);
@@ -203,6 +210,8 @@ const GameCore = (() => {
     try { Renderer.drawSky(ctx, scrollX); } catch(e) {}
     try { Renderer.drawGround(ctx, scrollX); } catch(e) {}
     try { for (const o of Obstacles.all()) Renderer.drawObstacle(ctx, o); } catch(e) {}
+    // Coins
+    try { for (const c of Coins.all()) Coins.draw(ctx, c); } catch(e) {}
     // Thrown rocks
     try { for (const r of Thief.getThrownRocks()) Renderer.drawObstacle(ctx, { type:'rock', x:r.x, y:r.y, w:r.w, h:r.h }); } catch(e) {}
     // Thief
@@ -225,7 +234,7 @@ const GameCore = (() => {
         player: { x: worldOffset + PLAYER_X, y: player?.y || 0 },
         thief: Thief.get() || {},
         speed, abilities: abilities || [],
-        stolenNotes, speedUpWarning, speedUpBuffer,
+        stolenNotes, speedUpWarning, speedUpBuffer, coins: Coins.getCollected(),
         currentTier, speedTiers: SPEED_TIERS, tierScores: SPEED_TIER_SCORES,
         catchScore, thiefLevel: Thief.getLevel(),
       });
