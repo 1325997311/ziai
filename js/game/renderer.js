@@ -197,44 +197,80 @@ const Renderer = (() => {
     }
   }
 
-  // ====== THIEF (Win98 error dialog style) ======
+  // ====== THIEF (黑色蒙面忍者) ======
   function drawThief(ctx, t) {
     const {x,y,state,frame} = t;
     ctx.save(); ctx.translate(x, y);
     const bob = Math.sin(frame*0.8)*2;
+    const b = '#000', w = '#fff', skin = '#fdcb6e', red = '#e74c3c';
+    ctx.lineWidth = 1.5;
 
-    // Body (gray Win98 window)
-    ctx.fillStyle = C.bg; ctx.strokeStyle = C.black; ctx.lineWidth = 1.5;
-    ctx.fillRect(6, bob + 13, 18, 14); ctx.strokeRect(6, bob + 13, 18, 14);
+    // Legs (dark pants)
+    const lp = Math.sin(frame*0.7)*4;
+    ctx.fillStyle = b;
+    ctx.fillRect(9, bob + 26 + lp, 7, 7);
+    ctx.fillRect(17, bob + 26 - lp, 7, 7);
+    // Shoes
+    ctx.fillStyle = '#333';
+    ctx.fillRect(8, bob + 31 + lp, 9, 4);
+    ctx.fillRect(16, bob + 31 - lp, 9, 4);
+
+    // Body (black ninja suit)
+    ctx.fillStyle = b;
+    ctx.fillRect(7, bob + 12, 16, 16);
+    // Belt
+    ctx.fillStyle = red;
+    ctx.fillRect(7, bob + 22, 16, 3);
+    // Belt buckle
+    ctx.fillStyle = '#ffd700';
+    ctx.fillRect(13, bob + 22, 4, 3);
+
+    // Arm (holding scroll)
+    ctx.fillStyle = b;
+    ctx.fillRect(1, bob + 13, 6, 4);
+
+    // Stolen scroll on back
+    ctx.fillStyle = w; ctx.strokeStyle = b; ctx.lineWidth = 1;
+    ctx.fillRect(2, bob + 9, 5, 9); ctx.strokeRect(2, bob + 9, 5, 9);
+    ctx.fillStyle = red;
+    ctx.fillRect(3, bob + 11, 3, 1);
+    ctx.fillRect(3, bob + 14, 3, 1);
+
     // Head
-    ctx.fillStyle = C.white; ctx.strokeStyle = C.black;
-    ctx.fillRect(10, bob + 2, 12, 12); ctx.strokeRect(10, bob + 2, 12, 12);
-    // Mask (dark)
-    ctx.fillStyle = C.dgray;
-    ctx.fillRect(8, bob + 5, 16, 5);
-    ctx.fillStyle = C.white;
-    ctx.fillRect(12, bob + 6, 3, 2);
-    // Scroll (Win98 help icon)
-    ctx.fillStyle = C.yellow; ctx.strokeStyle = C.black; ctx.lineWidth = 1;
-    ctx.fillRect(2, bob + 12, 6, 10); ctx.strokeRect(2, bob + 12, 6, 10);
-    ctx.fillStyle = C.blue;
-    ctx.fillRect(3, bob + 14, 4, 1);
-    ctx.fillRect(3, bob + 16, 4, 1);
-    // Legs
-    const lp = Math.sin(frame*0.8)*4;
-    ctx.fillStyle = C.black;
-    ctx.fillRect(10, bob + 27 + lp, 5, 5);
-    ctx.fillRect(17, bob + 27 - lp, 5, 5);
+    ctx.fillStyle = skin;
+    ctx.fillRect(10, bob + 1, 12, 12);
+    ctx.strokeStyle = b; ctx.lineWidth = 1.5;
+    ctx.strokeRect(10, bob + 1, 12, 12);
 
-    if (state==='taunting') {
-      ctx.fillStyle = C.red;
-      ctx.fillRect(14, 14, 6, 2);
+    // Ninja mask (covers lower face)
+    ctx.fillStyle = b;
+    ctx.fillRect(8, bob + 5, 16, 7);
+
+    // Eyes (peeking through mask)
+    ctx.fillStyle = w;
+    ctx.fillRect(12, bob + 5, 3, 3);
+    ctx.fillRect(17, bob + 5, 3, 3);
+    ctx.fillStyle = b;
+    ctx.fillRect(13, bob + 6, 1.5, 1.5);
+    ctx.fillRect(18, bob + 6, 1.5, 1.5);
+
+    // Headband
+    ctx.fillStyle = red;
+    ctx.fillRect(9, bob + 0, 14, 3);
+    // Headband tails
+    ctx.fillStyle = red;
+    ctx.fillRect(1, bob - 2, 3, 6);
+
+    // Taunting: tongue out
+    if (state === 'taunting') {
+      ctx.fillStyle = '#ff7675';
+      ctx.fillRect(14, bob + 12, 6, 3);
     }
-    if (state==='panicking') {
-      ctx.fillStyle = C.red;
-      ctx.fillRect(8, -3, 4, 6);
-      ctx.fillRect(12, -4, 4, 7);
-      ctx.fillRect(16, -3, 4, 6);
+    // Panicking: sweat drops
+    if (state === 'panicking') {
+      ctx.fillStyle = '#74b9ff';
+      ctx.fillRect(22, bob - 2, 3, 5);
+      ctx.fillRect(26, bob + 1, 2, 4);
     }
     ctx.restore();
   }

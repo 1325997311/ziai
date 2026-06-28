@@ -230,7 +230,6 @@ const GameCore = (() => {
         Renderer.drawThief(ctx, t);
         const ta = Thief.getThrowAnim();
         if (ta > 0) { drawThrowAnim(ctx, t, ta); }
-        if (score < catchScore) { drawShield(ctx, t); }
       }
     } catch(e) {}
     // Player
@@ -268,13 +267,6 @@ const GameCore = (() => {
     ctx.fillRect(t.x + 29, t.y + bob - 17, 4, 3);
     ctx.fillStyle = '#000';
     ctx.fillRect(t.x + 20, t.y + bob - 6, 7, 6);
-  }
-
-  function drawShield(ctx, t) {
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeRect(t.x - 4, t.y - 4, t.w + 8, t.h + 8);
-    ctx.setLineDash([]);
   }
 
   function resume() {
