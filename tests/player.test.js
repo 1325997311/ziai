@@ -20,7 +20,7 @@ describe('Player', () => {
 
     it('abilities are parsed correctly', () => {
       const p = makePlayer(['jump', 'slide', 'dash']);
-      assert(p.canSlide);
+      assert(p.canGlide);
       assert(p.canDash);
       assert(!p.canDoubleJump);
     });
@@ -35,11 +35,12 @@ describe('Player', () => {
       assert(!p.onGround);
     });
 
-    it('cannot jump while sliding', () => {
-      const p = makePlayer(['slide']);
-      p.state = 'sliding';
+    it('cannot jump while dashing', () => {
+      const p = makePlayer(['dash']);
+      p.dash();
+      const st = p.state;
       p.jump();
-      assertEquals(p.state, 'sliding'); // no change
+      assertEquals(p.state, st); // no change while dashing
     });
 
     it('double jump only if unlocked', () => {
@@ -92,19 +93,30 @@ describe('Player', () => {
     });
   });
 
-  describe('slide', () => {
-    it('slides when unlocked and on ground', () => {
-      const p = makePlayer(['slide']);
-      p.slide();
-      assertEquals(p.state, 'sliding');
-      assertEquals(p.h, 16);
-    });
-
-    it('cannot slide in air', () => {
+  describe('glide', () => {
+    it('glides when unlocked and in air falling', () => {
       const p = makePlayer(['slide']);
       p.onGround = false;
-      p.slide();
-      assertEquals(p.state, 'running');
+      p.vy = 5; // falling
+      p.glide();
+      assertEquals(p.state, 'gliding');
+      assert(p.isGliding);
+    });
+
+    it('cannot glide on ground', () => {
+      const p = makePlayer(['slide']);
+      p.onGround = true;
+      p.glide();
+      assert(!p.isGliding);
+    });
+
+    it('stopGlide clears gliding state', () => {
+      const p = makePlayer(['slide']);
+      p.onGround = false;
+      p.vy = 5;
+      p.glide();
+      p.stopGlide();
+      assert(!p.isGliding);
     });
   });
 

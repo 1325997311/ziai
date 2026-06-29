@@ -11,6 +11,7 @@ const GameInput = (() => {
 
   // 外部触摸状态（由 Vue 设置）
   let extJump = false;
+  let extJumpHeld = false;
   let extSlide = false;
   let extDash = false;
 
@@ -41,6 +42,7 @@ const GameInput = (() => {
     return false;
   }
 
+  function isJumpHeld()  { return jumpPressed || extJumpHeld; }
   function isSlideHeld() { return slideHeld || extSlide; }
   function consumeDash() {
     if (dashJustPressed || extDash) {
@@ -55,7 +57,7 @@ const GameInput = (() => {
   }
 
   // 外部设置触摸状态
-  function setTouchJump()   { extJump = true; }
+  function setTouchJump(v)   { if (v) extJump = true; extJumpHeld = v; }
   function setTouchSlide(v) { extSlide = v; }
   function setTouchDash()   { extDash = true; }
 
@@ -73,8 +75,8 @@ const GameInput = (() => {
     Object.keys(keys).forEach(k => delete keys[k]);
     jumpPressed = false; jumpJustPressed = false;
     slideHeld = false; dashPressed = false; dashJustPressed = false;
-    extJump = false; extSlide = false; extDash = false;
+    extJump = false; extJumpHeld = false; extSlide = false; extDash = false;
   }
 
-  return { attach, detach, reset, consumeJump, isSlideHeld, consumeDash, consumePause, setTouchJump, setTouchSlide, setTouchDash };
+  return { attach, detach, reset, consumeJump, isJumpHeld, isSlideHeld, consumeDash, consumePause, setTouchJump, setTouchSlide, setTouchDash };
 })();

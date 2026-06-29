@@ -16,8 +16,6 @@ const CONFIG = {
   GRAVITY: 0.1,          // 基础重力 (会随速度缩放: g × m²)
   JUMP_VEL: -5.4,        // 基础跳跃初速 (会随速度缩放: v × m)
   DOUBLE_JUMP_VEL: -4.2, // 二段跳初速
-  SLIDE_DURATION: 30,    // 下滑帧数
-  SLIDE_H: 16,           // 下滑时高度
   DASH_DURATION: 24,     // 冲刺帧数
   DASH_COOLDOWN: 180,    // 冲刺冷却帧数
   INVINCIBLE_AFTER_HIT: 120, // 受伤后无敌帧数

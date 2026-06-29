@@ -6,8 +6,7 @@ const Player = (() => {
   const {
     PLAYER_W: W, PLAYER_H: H, PLAYER_X: BASE_X, GROUND_Y,
     GRAVITY, JUMP_VEL, DOUBLE_JUMP_VEL,
-    SLIDE_DURATION, SLIDE_H, DASH_DURATION, DASH_COOLDOWN,
-    HITBOX_SHRINK,
+    DASH_DURATION, DASH_COOLDOWN, HITBOX_SHRINK,
   } = CONFIG;
 
   class PlayerState {
@@ -20,12 +19,12 @@ const Player = (() => {
       this.state = 'running';
       this.frame = 0;
       this.onGround = true;
-      this.canSlide       = abilities.includes('slide');
+      this.canGlide       = abilities.includes('slide'); // renamed: slide→glide
       this.canDoubleJump  = abilities.includes('doubleJump');
       this.canDash        = abilities.includes('dash');
       this.extraLife      = abilities.includes('extraLife');
       this.hasDoubleJumped = false;
-      this.slideTimer     = 0;
+      this.isGliding      = false;
       this.dashTimer      = 0;
       this.dashCooldown   = 0;
       this.invincible     = false;
@@ -64,20 +63,12 @@ const Player = (() => {
         this.invincibleTimer--;
         if (this.invincibleTimer === 0 && this.dashTimer === 0) this.invincible = false;
       }
-      if (this.slideTimer > 0) {
-        this.slideTimer--;
-        if (this.slideTimer === 0 && this.onGround) {
-          this.state = 'running';
-          this.y = GROUND_Y - this.h;
-          this.h = H;
-        }
-      }
+      // Glide: reduced gravity when in air and holding jump
+      const glideGravity = (this.isGliding && !this.onGround) ? g * 0.25 : g;
 
       // 重力
-      if (this.state !== 'sliding' || !this.onGround) {
-        this.vy += g;
-        this.y += this.vy;
-      }
+      this.vy += glideGravity;
+      this.y += this.vy;
 
       // 着地检测
       if (this.y >= GROUND_Y - this.h) {
@@ -85,11 +76,8 @@ const Player = (() => {
         this.vy = 0;
         this.onGround = true;
         this.hasDoubleJumped = false;
+        this.isGliding = false;
         if (this.state === 'jumping') this.state = 'running';
-        if (this.state === 'sliding' && this.slideTimer <= 0) {
-          this.state = 'running';
-          this.h = H;
-        }
       } else {
         this.onGround = false;
       }
@@ -104,25 +92,34 @@ const Player = (() => {
     }
 
     jump() {
-      if (this.dashTimer > 0 || this.state === 'sliding') return;
+      if (this.dashTimer > 0) return;
       const m = this.speedMult;
       if (this.onGround) {
         this.vy = JUMP_VEL * m;
         this.state = 'jumping';
         this.onGround = false;
         this.hasDoubleJumped = false;
+        this.isGliding = false;
       } else if (this.canDoubleJump && !this.hasDoubleJumped) {
         this.vy = DOUBLE_JUMP_VEL * m;
         this.hasDoubleJumped = true;
+        this.isGliding = false;
       }
     }
 
-    slide() {
-      if (!this.canSlide || this.dashTimer > 0 || !this.onGround) return;
-      this.state = 'sliding';
-      this.slideTimer = SLIDE_DURATION;
-      this.h = SLIDE_H;
-      this.y = GROUND_Y - SLIDE_H;
+    /** Start gliding (slow descent) — called every frame while jump held in air */
+    glide() {
+      if (!this.canGlide || this.dashTimer > 0 || this.onGround) return;
+      if (this.vy > 0) { // only glide when falling
+        this.isGliding = true;
+        this.state = 'gliding';
+      }
+    }
+
+    /** Stop gliding when jump released */
+    stopGlide() {
+      this.isGliding = false;
+      if (this.state === 'gliding') this.state = 'jumping';
     }
 
     dash() {
@@ -151,14 +148,14 @@ const Player = (() => {
       this.frame = 0;
       this.onGround = true;
       this.hasDoubleJumped = false;
-      this.slideTimer = 0;
+      this.isGliding = false;
       this.dashTimer = 0;
       this.dashCooldown = 0;
       this.invincible = false;
       this.invincibleTimer = 0;
       this.trail = [];
       if (abilities) {
-        this.canSlide       = abilities.includes('slide');
+        this.canGlide       = abilities.includes('slide');
         this.canDoubleJump  = abilities.includes('doubleJump');
         this.canDash        = abilities.includes('dash');
         this.extraLife      = abilities.includes('extraLife');

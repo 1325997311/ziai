@@ -88,30 +88,42 @@ const Renderer = (() => {
     const b = '#000', w = '#fff', pink = '#ffb6c1', gray = '#808080';
     ctx.lineWidth = 1.5;
 
-    if (state === 'sliding') {
-      // ---- SLIDING RABBIT ----
-      // Ears flat back
+    if (state === 'gliding') {
+      // ---- GLIDING RABBIT (arms spread, floating) ----
+      // Ears back (wind)
       ctx.fillStyle = w; ctx.strokeStyle = b;
-      ctx.fillRect(ox + 2, oy + 6, 16, 4); ctx.strokeRect(ox + 2, oy + 6, 16, 4);
+      ctx.fillRect(ox + 4, oy + bob - 8, 5, 14); ctx.strokeRect(ox + 4, oy + bob - 8, 5, 14);
+      ctx.fillRect(ox + 19, oy + bob - 8, 5, 14); ctx.strokeRect(ox + 19, oy + bob - 8, 5, 14);
       ctx.fillStyle = pink;
-      ctx.fillRect(ox + 4, oy + 7, 5, 2);
-
-      // Body stretched low
+      ctx.fillRect(ox + 5, oy + bob - 5, 3, 7);
+      ctx.fillRect(ox + 20, oy + bob - 5, 3, 7);
+      // Head
       ctx.fillStyle = w; ctx.strokeStyle = b;
-      ctx.fillRect(ox + 2, oy + 10, 24, 12); ctx.strokeRect(ox + 2, oy + 10, 24, 12);
-      // Eye
+      ctx.fillRect(ox + 4, oy + bob, 20, 15); ctx.strokeRect(ox + 4, oy + bob, 20, 15);
       ctx.fillStyle = b;
-      ctx.fillRect(ox + 6, oy + 13, 3, 3);
-      ctx.fillStyle = w;
-      ctx.fillRect(ox + 7, oy + 14, 1, 1);
+      ctx.fillRect(ox + 8, oy + bob + 3, 4, 5); ctx.fillRect(ox + 16, oy + bob + 3, 4, 5);
+      ctx.fillStyle = w; ctx.fillRect(ox + 9, oy + bob + 4, 2, 2); ctx.fillRect(ox + 17, oy + bob + 4, 2, 2);
+      ctx.fillStyle = pink; ctx.fillRect(ox + 5, oy + bob + 8, 3, 2);
+      // Body
+      ctx.fillStyle = w; ctx.strokeStyle = b;
+      ctx.fillRect(ox + 2, oy + bob + 15, 24, 16); ctx.strokeRect(ox + 2, oy + bob + 15, 24, 16);
+      // Arms spread
+      ctx.fillStyle = w; ctx.strokeStyle = b; ctx.lineWidth = 1;
+      ctx.fillRect(ox - 4, oy + bob + 16, 6, 4); ctx.strokeRect(ox - 4, oy + bob + 16, 6, 4);
+      ctx.fillRect(ox + 26, oy + bob + 16, 6, 4); ctx.strokeRect(ox + 26, oy + bob + 16, 6, 4);
+      // Legs slightly apart
+      ctx.fillStyle = w; ctx.strokeStyle = b;
+      ctx.fillRect(ox + 5, oy + bob + 31, 8, 6); ctx.strokeRect(ox + 5, oy + bob + 31, 8, 6);
+      ctx.fillRect(ox + 15, oy + bob + 31, 8, 6); ctx.strokeRect(ox + 15, oy + bob + 31, 8, 6);
       // Tail
       ctx.fillStyle = w; ctx.strokeStyle = b;
-      ctx.beginPath(); ctx.arc(ox + 26, oy + 15, 4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(ox + 28, oy + bob + 20, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
       return;
     }
 
     // ====== NORMAL / JUMPING / DASHING ======
-    const earWiggle = state === 'running' ? Math.sin(frame * 1.2) * 2.5 : 0;
+    if (state === 'gliding') { /* already handled above */ }
+    const earWiggle = (state === 'running' || state === 'gliding') ? Math.sin(frame * 1.2) * 2.5 : 0;
     const lean = state === 'dashing' ? 3 : 0;
 
     // ---- EARS ----

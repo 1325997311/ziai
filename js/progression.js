@@ -5,7 +5,7 @@
 const Progression = (() => {
   const THRESHOLDS = [
     { count: 0,  ability: 'jump',        name: '跳跃',     icon: '⬆', desc: '基础跳跃能力' },
-    { count: 10, ability: 'slide',       name: '下滑',     icon: '⬇', desc: '按下键滑行通过低矮障碍' },
+    { count: 10, ability: 'slide',       name: '滑翔',     icon: '🪂', desc: '空中按跳跃减速飘落' },
     { count: 30, ability: 'doubleJump',  name: '二段跳',   icon: '🦘', desc: '空中再次跳跃' },
     { count: 50, ability: 'dash',        name: '冲刺',     icon: '💨', desc: 'Shift 冲刺，无敌状态' },
     { count: 100,ability: 'extraLife',   name: '额外生命', icon: '❤️', desc: '开局携带两条命' },

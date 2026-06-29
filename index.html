@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=Press+Start+2P&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KaiSerif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/reset.css?v=22">
-<link rel="stylesheet" href="css/main.css?v=22">
-<link rel="stylesheet" href="css/effects.css?v=22">
+<link rel="stylesheet" href="css/reset.css?v=23">
+<link rel="stylesheet" href="css/main.css?v=23">
+<link rel="stylesheet" href="css/effects.css?v=23">
 </head>
 <body>
 
@@ -111,7 +111,6 @@
     <canvas id="game-canvas" ref="gameCanvas"></canvas>
     <div class="game-touch-bar">
       <button class="touch-btn" @pointerdown.prevent="touchJump=true" @pointerup.prevent="touchJump=false">⬆</button>
-      <button v-if="abilities && abilities.includes('slide')" class="touch-btn" @pointerdown.prevent="touchSlide=true" @pointerup.prevent="touchSlide=false">⬇</button>
       <button v-if="abilities && abilities.includes('dash')" class="touch-btn dash-btn" @pointerdown.prevent="touchDash=true" @pointerup.prevent="touchDash=false">💨</button>
     </div>
     <button class="game-quit-btn" @click="quitGame">✕</button>
@@ -158,21 +157,21 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
-<script src="js/config.js?v=22"></script>
-<script src="js/eventbus.js?v=22"></script>
-<script src="js/pool.js?v=22"></script>
-<script src="js/storage.js?v=22"></script>
-<script src="js/notes.js?v=22"></script>
-<script src="js/progression.js?v=22"></script>
-<script src="js/game/input.js?v=22"></script>
-<script src="js/game/renderer.js?v=22"></script>
-<script src="js/game/player.js?v=22"></script>
-<script src="js/game/thief.js?v=22"></script>
-<script src="js/game/obstacles.js?v=22"></script>
-<script src="js/game/coins.js?v=22"></script>
-<script src="js/game/powerups.js?v=22"></script>
-<script src="js/game/ui.js?v=22"></script>
-<script src="js/game/core.js?v=22"></script>
-<script src="js/app.js?v=22"></script>
+<script src="js/config.js?v=23"></script>
+<script src="js/eventbus.js?v=23"></script>
+<script src="js/pool.js?v=23"></script>
+<script src="js/storage.js?v=23"></script>
+<script src="js/notes.js?v=23"></script>
+<script src="js/progression.js?v=23"></script>
+<script src="js/game/input.js?v=23"></script>
+<script src="js/game/renderer.js?v=23"></script>
+<script src="js/game/player.js?v=23"></script>
+<script src="js/game/thief.js?v=23"></script>
+<script src="js/game/obstacles.js?v=23"></script>
+<script src="js/game/coins.js?v=23"></script>
+<script src="js/game/powerups.js?v=23"></script>
+<script src="js/game/ui.js?v=23"></script>
+<script src="js/game/core.js?v=23"></script>
+<script src="js/app.js?v=23"></script>
 </body>
 </html>

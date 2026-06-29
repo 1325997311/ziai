@@ -112,8 +112,8 @@ const GameUI = (() => {
       ctx.fillText('🦘'+(player?.hasDoubleJumped?'✗':'✓'), abX, abY); abX += 48;
     }
     if (abilities.includes('slide')) {
-      ctx.fillStyle = B;
-      ctx.fillText('⬇✓', abX, abY);
+      ctx.fillStyle = player?.isGliding ? C.red : B;
+      ctx.fillText('🪂' + (player?.isGliding ? '滑' : '✓'), abX, abY);
     }
 
     // Speed-up warning

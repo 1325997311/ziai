@@ -124,7 +124,8 @@ const GameCore = (() => {
 
     // Input
     if (GameInput.consumeJump()) player.jump();
-    if (GameInput.isSlideHeld()) player.slide();
+    if (GameInput.isJumpHeld() && !player.onGround) player.glide();
+    else player.stopGlide();
     if (GameInput.consumeDash()) player.dash();
     if (GameInput.consumePause()) { state = 'paused'; return; }
 

@@ -350,7 +350,7 @@ const app = createApp({
     }
 
     // Watch touch state → bridge to GameInput
-    watch(touchJump, (v) => { if (v) GameInput.setTouchJump(); });
+    watch(touchJump, (v) => { GameInput.setTouchJump(v); });
     watch(touchSlide, (v) => { GameInput.setTouchSlide(v); });
     watch(touchDash, (v) => { if (v) GameInput.setTouchDash(); });
 
