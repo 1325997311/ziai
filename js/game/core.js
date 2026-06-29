@@ -59,6 +59,9 @@ const GameCore = (() => {
 
   function start() {
     if (state === 'playing') return;
+    // Flush stray input accumulated before game start
+    GameInput.consumeJump();
+    GameInput.consumeDash();
     state = 'playing';
     lastTime = performance.now();
     lastError = '';
