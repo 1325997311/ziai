@@ -64,7 +64,7 @@ const Player = (() => {
         if (this.invincibleTimer === 0 && this.dashTimer === 0) this.invincible = false;
       }
       // Glide: reduced gravity when in air and holding jump
-      const glideGravity = (this.isGliding && !this.onGround) ? g * 0.25 : g;
+      const glideGravity = (this.isGliding && !this.onGround) ? g * 0.12 : g;
 
       // 重力
       this.vy += glideGravity;
