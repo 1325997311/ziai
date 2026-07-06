@@ -264,23 +264,6 @@ const Storage = (() => {
       scores: readScores(),
     };
     const json = JSON.stringify(data, null, 2);
-
-    // File System Access API: system save dialog, can overwrite
-    if (window.showSaveFilePicker) {
-      const handlePromise = window.showSaveFilePicker({
-        suggestedName: 'ziai-backup.json',
-        types: [{ description: 'JSON Backup', accept: { 'application/json': ['.json'] } }],
-      });
-      // Write happens async but handle acquired synchronously (keeps user gesture)
-      handlePromise.then(async (handle) => {
-        const writable = await handle.createWritable();
-        await writable.write(json);
-        await writable.close();
-      }).catch(() => {}); // user cancelled
-      return true;
-    }
-
-    // Fallback: traditional download
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
