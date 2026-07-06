@@ -255,7 +255,7 @@ const Storage = (() => {
 
   // ---- 第 2 层：导出 ----
 
-  async function exportData() {
+  function exportData() {
     const data = {
       version: 1,
       exportedAt: now(),
@@ -265,20 +265,19 @@ const Storage = (() => {
     };
     const json = JSON.stringify(data, null, 2);
 
-    // Try File System Access API (lets user pick/overwrite file)
+    // File System Access API: system save dialog, can overwrite
     if (window.showSaveFilePicker) {
-      try {
-        const handle = await window.showSaveFilePicker({
-          suggestedName: 'ziai-backup.json',
-          types: [{ description: 'JSON Backup', accept: { 'application/json': ['.json'] } }],
-        });
+      const handlePromise = window.showSaveFilePicker({
+        suggestedName: 'ziai-backup.json',
+        types: [{ description: 'JSON Backup', accept: { 'application/json': ['.json'] } }],
+      });
+      // Write happens async but handle acquired synchronously (keeps user gesture)
+      handlePromise.then(async (handle) => {
         const writable = await handle.createWritable();
         await writable.write(json);
         await writable.close();
-        return true;
-      } catch (e) {
-        if (e.name === 'AbortError') return false; // user cancelled
-      }
+      }).catch(() => {}); // user cancelled
+      return true;
     }
 
     // Fallback: traditional download
