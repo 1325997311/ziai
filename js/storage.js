@@ -267,9 +267,7 @@ const Storage = (() => {
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const d = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    a.download = `ziai-backup-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
+    a.download = 'ziai-backup.json';
     a.href = url;
     a.click();
     URL.revokeObjectURL(url);
