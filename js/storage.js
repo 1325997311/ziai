@@ -255,7 +255,7 @@ const Storage = (() => {
 
   // ---- 第 2 层：导出 ----
 
-  function exportData() {
+  async function exportData() {
     const data = {
       version: 1,
       exportedAt: now(),
@@ -264,6 +264,24 @@ const Storage = (() => {
       scores: readScores(),
     };
     const json = JSON.stringify(data, null, 2);
+
+    // Try File System Access API (lets user pick/overwrite file)
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: 'ziai-backup.json',
+          types: [{ description: 'JSON Backup', accept: { 'application/json': ['.json'] } }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(json);
+        await writable.close();
+        return true;
+      } catch (e) {
+        if (e.name === 'AbortError') return false; // user cancelled
+      }
+    }
+
+    // Fallback: traditional download
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
